@@ -7,7 +7,7 @@ import routes from "./routes/index.js";
 import { WEB_URL } from "./envs.js";
 import { errorHandler } from "./middlewares/error.middlewares.js";
 import morganMiddleware from "./logger/morgan.logger.js";
-import { passportService } from "./services/passport.services.js";
+import { passportService } from "./services/auth.services.js";
 
 const app = express();
 
