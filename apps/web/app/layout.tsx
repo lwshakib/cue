@@ -4,6 +4,7 @@ import "./globals.css";
 
 import { ThemeProvider } from "@repo/ui/theme-provider";
 import { Toaster } from "@repo/ui/components/ui/sonner";
+import { AuthHandler } from "@/components/AuthHandler";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -34,6 +35,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <AuthHandler />
           {children}
           <Toaster position="top-right" closeButton richColors theme="dark" />
         </ThemeProvider>

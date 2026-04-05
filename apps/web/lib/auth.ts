@@ -30,15 +30,24 @@ export const auth = {
   api: {
     /**
      * Fetch the current session on the server side.
-     * Forwarding headers (like cookies) is essential for identity synchronization.
+     * Forwarding a Bearer token derived from cookies is essential for the backend.
      */
     getSession: async (options: { headers: Headers }) => {
       const { headers } = options;
       
+      // Extract the axonix_session_token from the Cookie header
+      const cookieHeader = headers.get("cookie") || "";
+      const match = cookieHeader.match(/axonix_session_token=([^;]+)/);
+      const token = match ? match[1] : null;
+
+      if (!token) return null;
+
       try {
         const response = await fetch(`${BASE_URL}/session`, {
           method: "GET",
-          headers: headers, // Forwarding cookies/tokens for session validation
+          headers: {
+            "Authorization": `Bearer ${token}`,
+          },
         });
 
         if (!response.ok) return null;
@@ -156,4 +165,3 @@ export const auth = {
     },
   },
 };
-

@@ -19,6 +19,30 @@ interface EmailSignUpOptions extends EmailSignInOptions {
 }
 
 /**
+ * Utility functions for Cookie Persistence
+ */
+const CookieStorage = {
+  get: (name: string) => {
+    if (typeof document === "undefined") return null;
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(";").shift();
+    return null;
+  },
+  set: (name: string, value: string, days = 30) => {
+    if (typeof document === "undefined") return;
+    const date = new Date();
+    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+    const expires = `; expires=${date.toUTCString()}`;
+    document.cookie = `${name}=${value || ""}${expires}; path=/; SameSite=Lax`;
+  },
+  remove: (name: string) => {
+    if (typeof document === "undefined") return;
+    document.cookie = `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;`;
+  }
+};
+
+/**
  * AuthClient Service
  * 
  * Centralizes the authentication redirection and API logic for the Axonix ecosystem.
@@ -28,11 +52,15 @@ class AuthClient {
 
   public signIn = {
     /**
-     * Redirect to social OAuth provider
+     * Redirect to social OAuth provider with callbackURL state
      */
     social: async (options: { provider: "google" | "github"; callbackURL?: string }) => {
-      const { provider } = options;
-      window.location.href = `${this.BASE_URL}/${provider}`;
+      const { provider, callbackURL } = options;
+      const url = new URL(`${this.BASE_URL}/${provider}`);
+      if (callbackURL) {
+        url.searchParams.set("callbackURL", callbackURL);
+      }
+      window.location.href = url.toString();
     },
 
     /**
@@ -52,12 +80,16 @@ class AuthClient {
           throw new Error(data.message || "Email authentication failed");
         }
 
-        // Persist session token if provided
+        // Persist session token in cookie if provided
         if (data.sessionToken) {
-          localStorage.setItem("axonix_session_token", data.sessionToken);
+          CookieStorage.set("axonix_session_token", data.sessionToken);
         }
 
         callbacks?.onSuccess?.(data);
+
+        // Dynamic Redirection
+        const redirectPath = options.callbackURL || "/workflows";
+        window.location.href = redirectPath;
       } catch (error: any) {
         callbacks?.onError?.({ error: { message: error.message } });
       }
@@ -98,7 +130,7 @@ class AuthClient {
 
     useEffect(() => {
       const fetchSession = async () => {
-        const token = localStorage.getItem("axonix_session_token");
+        const token = CookieStorage.get("axonix_session_token");
         if (!token) {
           setData(null);
           setIsPending(false);
@@ -118,7 +150,7 @@ class AuthClient {
             setData(session);
           } else {
             setData(null);
-            localStorage.removeItem("axonix_session_token");
+            CookieStorage.remove("axonix_session_token");
           }
         } catch (error) {
           console.error("[AuthClient] useSession synchronization failed:", error);
@@ -181,10 +213,10 @@ class AuthClient {
   }
 
   /**
-   * Sign out and clear local session state.
+   * Sign out and clear session cookie.
    */
   public async signOut() {
-    localStorage.removeItem("axonix_session_token");
+    CookieStorage.remove("axonix_session_token");
     window.location.href = "/sign-in";
   }
 

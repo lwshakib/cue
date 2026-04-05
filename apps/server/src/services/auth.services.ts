@@ -117,6 +117,13 @@ class PassportService {
                     image: profile.photos?.[0]?.value || null,
                   });
                 }
+                
+                // Ensure email is verified for social accounts
+                if (!user.emailVerified) {
+                  await postgresService.verifyUserEmail(user.id);
+                  user.emailVerified = true;
+                }
+
                 await postgresService.createAccount({
                   userId: user.id,
                   providerId: "google",
@@ -163,6 +170,13 @@ class PassportService {
                     image: profile.photos?.[0]?.value || null,
                   });
                 }
+
+                // Ensure email is verified for social accounts
+                if (!user.emailVerified) {
+                  await postgresService.verifyUserEmail(user.id);
+                  user.emailVerified = true;
+                }
+
                 await postgresService.createAccount({
                   userId: user.id,
                   providerId: "github",

@@ -2,35 +2,53 @@ import { Router } from "express";
 import { auth, passportService } from "../services/auth.services.js";
 import { postgresService } from "../services/postgres.services.js";
 import { WEB_URL } from "../envs.js";
+import logger from "../logger/winston.logger.js";
 
 const router: Router = Router();
 
 // --- Google Authentication Routes ---
 router.get(
   "/google",
-  passportService.passport.authenticate("google", {
-    scope: ["profile", "email"],
-    session: false,
-  })
+  (req, res, next) => {
+    const { callbackURL } = req.query;
+    const state = callbackURL ? Buffer.from(callbackURL as string).toString("base64") : undefined;
+    
+    passportService.passport.authenticate("google", {
+      scope: ["profile", "email"],
+      session: false,
+      state,
+    })(req, res, next);
+  }
 );
 
 router.get(
   "/google/callback",
   passportService.passport.authenticate("google", {
-    failureRedirect: "/login",
+    failureRedirect: "/sign-in",
     session: false,
   }),
   async (req, res) => {
     try {
       const user: any = req.user;
-      // Social login creates a session
-      await postgresService.createSession(user.id, req.headers["user-agent"], req.ip);
+      const { state } = req.query;
       
-      res.json({
-        success: true,
-        message: "Google_Protocol_Authorized",
-        user,
-      });
+      // Social login creates a session
+      const session = await postgresService.createSession(user.id, req.headers["user-agent"], req.ip);
+      
+      let callbackURL = `${WEB_URL}/workflows`; // Default redirect
+      if (state) {
+        try {
+          callbackURL = Buffer.from(state as string, "base64").toString("utf-8");
+        } catch (e) {
+          logger.error("Error decoding callbackURL from state:", e);
+        }
+      }
+
+      // Append token to callbackURL
+      const redirectUrl = new URL(callbackURL);
+      redirectUrl.searchParams.set("token", session.token);
+
+      res.redirect(redirectUrl.toString());
     } catch (error: any) {
       res.status(500).json({ success: false, message: error.message });
     }
@@ -40,29 +58,46 @@ router.get(
 // --- GitHub Authentication Routes ---
 router.get(
   "/github",
-  passportService.passport.authenticate("github", {
-    scope: ["user:email"],
-    session: false,
-  })
+  (req, res, next) => {
+    const { callbackURL } = req.query;
+    const state = callbackURL ? Buffer.from(callbackURL as string).toString("base64") : undefined;
+
+    passportService.passport.authenticate("github", {
+      scope: ["user:email"],
+      session: false,
+      state,
+    })(req, res, next);
+  }
 );
 
 router.get(
   "/github/callback",
   passportService.passport.authenticate("github", {
-    failureRedirect: "/login",
+    failureRedirect: "/sign-in",
     session: false,
   }),
   async (req, res) => {
     try {
       const user: any = req.user;
+      const { state } = req.query;
+      
       // Social login creates a session
-      await postgresService.createSession(user.id, req.headers["user-agent"], req.ip);
+      const session = await postgresService.createSession(user.id, req.headers["user-agent"], req.ip);
 
-      res.json({
-        success: true,
-        message: "GitHub_Protocol_Authorized",
-        user,
-      });
+      let callbackURL = `${WEB_URL}/workflows`; // Default redirect
+      if (state) {
+        try {
+          callbackURL = Buffer.from(state as string, "base64").toString("utf-8");
+        } catch (e) {
+          logger.error("Error decoding callbackURL from state:", e);
+        }
+      }
+
+      // Append token to callbackURL
+      const redirectUrl = new URL(callbackURL);
+      redirectUrl.searchParams.set("token", session.token);
+
+      res.redirect(redirectUrl.toString());
     } catch (error: any) {
       res.status(500).json({ success: false, message: error.message });
     }
