@@ -1,102 +1,127 @@
-import Image, { type ImageProps } from "next/image";
-import { Button } from "@repo/ui/button";
-import styles from "./page.module.css";
-
-type Props = Omit<ImageProps, "src"> & {
-  srcLight: string;
-  srcDark: string;
-};
-
-const ThemeImage = (props: Props) => {
-  const { srcLight, srcDark, ...rest } = props;
-
-  return (
-    <>
-      <Image {...rest} src={srcLight} className="imgLight" />
-      <Image {...rest} src={srcDark} className="imgDark" />
-    </>
-  );
-};
+import { Button } from "@repo/ui/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@repo/ui/components/ui/card";
+import { Badge } from "@repo/ui/components/ui/badge";
+import { Input } from "@repo/ui/components/ui/input";
+import { Label } from "@repo/ui/components/ui/label";
+import { Switch } from "@repo/ui/components/ui/switch";
+import { ModeToggle } from "@repo/ui/mode-toggle";
 
 export default function Home() {
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <ThemeImage
-          className={styles.logo}
-          srcLight="turborepo-dark.svg"
-          srcDark="turborepo-light.svg"
-          alt="Turborepo logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>apps/web/app/page.tsx</code>
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new/clone?demo-description=Learn+to+implement+a+monorepo+with+a+two+Next.js+sites+that+has+installed+three+local+packages.&demo-image=%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F4K8ZISWAzJ8X1504ca0zmC%2F0b21a1c6246add355e55816278ef54bc%2FBasic.png&demo-title=Monorepo+with+Turborepo&demo-url=https%3A%2F%2Fexamples-basic-web.vercel.sh%2F&from=templates&project-name=Monorepo+with+Turborepo&repository-name=monorepo-turborepo&repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fturborepo%2Ftree%2Fmain%2Fexamples%2Fbasic&root-directory=apps%2Fdocs&skippable-integrations=1&teamSlug=vercel&utm_source=create-turbo"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://turborepo.dev/docs?utm_source"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
+    <div className="min-h-screen bg-background text-foreground">
+      {/* Navbar */}
+      <nav className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container mx-auto flex h-14 items-center justify-between px-6">
+          <div className="font-bold tracking-tight">
+            Axonix UI Test
+          </div>
+          <div className="flex items-center gap-4">
+            <ModeToggle />
+          </div>
         </div>
-        <Button appName="web" className={styles.secondary}>
-          Open alert
-        </Button>
+      </nav>
+
+      {/* Main Content */}
+      <main className="container mx-auto py-12 px-6">
+        <div className="mb-12 space-y-4">
+          <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl">
+            Component Showcase
+          </h1>
+          <p className="text-xl text-muted-foreground">
+            A pure display of Shadcn components to test theming and CSS stability without heavy customizations.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Buttons Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Buttons</CardTitle>
+              <CardDescription>Different standard button variants.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-wrap gap-4">
+              <Button>Default</Button>
+              <Button variant="secondary">Secondary</Button>
+              <Button variant="outline">Outline</Button>
+              <Button variant="ghost">Ghost</Button>
+              <Button variant="destructive">Destructive</Button>
+            </CardContent>
+          </Card>
+
+          {/* Badges Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Badges</CardTitle>
+              <CardDescription>Status and labeling badges.</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-wrap gap-4">
+              <Badge>Default</Badge>
+              <Badge variant="secondary">Secondary</Badge>
+              <Badge variant="outline">Outline</Badge>
+              <Badge variant="destructive">Destructive</Badge>
+            </CardContent>
+          </Card>
+
+          {/* Form Setup */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Form Elements</CardTitle>
+              <CardDescription>Interactable form components.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid w-full max-w-sm items-center gap-1.5">
+                <Label htmlFor="email">Email address</Label>
+                <Input type="email" id="email" placeholder="Email" />
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Switch id="airplane-mode" />
+                <Label htmlFor="airplane-mode">Airplane Mode</Label>
+              </div>
+
+              <div className="flex items-center justify-between border rounded-lg p-4">
+                <div className="space-y-0.5">
+                  <Label className="text-base">Push Notifications</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Receive notifications on updates.
+                  </p>
+                </div>
+                <Switch />
+              </div>
+            </CardContent>
+          </Card>
+
+           {/* Generic Info Card */}
+           <Card className="col-span-1 md:col-span-2 lg:col-span-3">
+             <CardHeader>
+               <CardTitle>Theme Variables</CardTitle>
+               <CardDescription>Default functional themes driven by globals.css</CardDescription>
+             </CardHeader>
+             <CardContent>
+               <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-4">
+                 <div className="space-y-1.5">
+                   <div className="h-20 w-full rounded-md bg-primary border bg-clip-padding flex items-center justify-center text-primary-foreground font-bold">Primary</div>
+                 </div>
+                 <div className="space-y-1.5">
+                   <div className="h-20 w-full rounded-md bg-secondary border flex items-center justify-center text-secondary-foreground font-bold">Secondary</div>
+                 </div>
+                 <div className="space-y-1.5">
+                   <div className="h-20 w-full rounded-md bg-muted border flex items-center justify-center text-muted-foreground font-bold text-sm">Muted</div>
+                 </div>
+                 <div className="space-y-1.5">
+                   <div className="h-20 w-full rounded-md bg-accent border flex items-center justify-center text-accent-foreground font-bold">Accent</div>
+                 </div>
+                 <div className="space-y-1.5">
+                   <div className="h-20 w-full rounded-md bg-destructive border flex items-center justify-center text-destructive-foreground font-bold text-sm">Destructive</div>
+                 </div>
+                 <div className="space-y-1.5">
+                   <div className="h-20 w-full rounded-md bg-card border flex items-center justify-center text-card-foreground shadow-sm font-bold">Card</div>
+                 </div>
+               </div>
+             </CardContent>
+           </Card>
+        </div>
       </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com/templates?search=turborepo&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://turborepo.dev?utm_source=create-turbo"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to turborepo.dev →
-        </a>
-      </footer>
     </div>
   );
 }
