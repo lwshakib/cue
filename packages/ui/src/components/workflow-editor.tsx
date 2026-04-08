@@ -38,7 +38,7 @@ type WorkflowNodeData = {
 
 const SelectorContext = React.createContext<{
   openSelector: () => void;
-  isConnecting: boolean;
+  connectingFromNodeId: string | null;
 } | null>(null);
 
 function InitialPlusNode() {
@@ -78,12 +78,13 @@ function InitialPlusNode() {
 function ManualTriggerNode({ id, data }: NodeProps<Node<WorkflowNodeData>>) {
   const { setNodes, setEdges } = useReactFlow();
   const ctx = React.useContext(SelectorContext);
-  const isConnecting = Boolean(ctx?.isConnecting);
+  const isConnectingFromThisNode = ctx?.connectingFromNodeId === id;
   const edges = useStore((state) => state.edges);
   const hasOutgoingConnection = React.useMemo(
     () => edges.some((edge) => edge.source === id),
     [edges, id]
   );
+  const showAddAffordance = !isConnectingFromThisNode && !hasOutgoingConnection;
 
   return (
     <div className="relative w-[244px]">
@@ -99,23 +100,21 @@ function ManualTriggerNode({ id, data }: NodeProps<Node<WorkflowNodeData>>) {
           />
 
           {/* Add-step affordance hidden once already connected */}
-          {!hasOutgoingConnection && (
+          {showAddAffordance && (
             <>
               <div className="pointer-events-none absolute right-[-50px] top-1/2 h-px w-[34px] -translate-y-1/2 bg-[#4a4a4a]" />
-              {!isConnecting && (
-                <button
-                  type="button"
-                  onClick={() => ctx?.openSelector()}
-                  className="pointer-events-auto absolute right-[-76px] top-1/2 flex h-[24px] w-[24px] -translate-y-1/2 items-center justify-center rounded-[6px] border border-[#3f3f3f] bg-[#292929] text-[#9a9a9a] hover:text-white"
-                >
-                  <PlusIcon className="size-3.5 stroke-[2.4]" />
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => ctx?.openSelector()}
+                className="pointer-events-auto absolute right-[-76px] top-1/2 flex h-[24px] w-[24px] -translate-y-1/2 items-center justify-center rounded-[6px] border border-[#3f3f3f] bg-[#292929] text-[#9a9a9a] hover:text-white"
+              >
+                <PlusIcon className="size-3.5 stroke-[2.4]" />
+              </button>
             </>
           )}
         </div>
       </div>
-      {!isConnecting && (
+      {!isConnectingFromThisNode && (
         <p className="mt-[16px] text-center text-[24px] font-medium leading-[1.08] tracking-[-0.01em] text-foreground">
           When clicking &lsquo;Execute workflow&rsquo;
         </p>
@@ -126,59 +125,53 @@ function ManualTriggerNode({ id, data }: NodeProps<Node<WorkflowNodeData>>) {
 }
 
 function HttpRequestNode({ id, data }: NodeProps<Node<WorkflowNodeData>>) {
-  const [method, setMethod] = React.useState("GET");
-  const [url, setUrl] = React.useState("https://api.example.com");
-  const [status, setStatus] = React.useState<string | null>(null);
   const { setNodes, setEdges } = useReactFlow();
-
-  const simulateRequest = () => {
-    setStatus(`Simulated ${method} request to ${url}`);
-  };
+  const ctx = React.useContext(SelectorContext);
+  const isConnectingFromThisNode = ctx?.connectingFromNodeId === id;
+  const edges = useStore((state) => state.edges);
+  const hasOutgoingConnection = React.useMemo(
+    () => edges.some((edge) => edge.source === id),
+    [edges, id]
+  );
+  const showAddAffordance = !isConnectingFromThisNode && !hasOutgoingConnection;
 
   return (
-    <div className="w-80 rounded-md border bg-card text-card-foreground shadow-sm">
-      <div className="flex items-center justify-between gap-2 px-3 py-2">
-        <div className="flex items-center gap-2">
-          <GlobeIcon className="size-4 text-primary" />
-          <p className="text-sm font-semibold">{data.label}</p>
+    <div className="relative w-[244px]">
+      <div className="flex items-center justify-center">
+        <div className="relative flex h-[94px] w-[94px] items-center justify-center rounded-[24px] border border-[#3a3a3a] bg-[#1f1f1f] shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
+          <GlobeIcon className="size-11 text-[#8a8a8a] stroke-[1.8]" />
+
+          <Handle
+            type="target"
+            position={Position.Left}
+            className="!pointer-events-auto !z-[60] !h-[18px] !w-[18px] !border-[#4a4a4a] !bg-[#202020] !shadow-none"
+          />
+
+          <Handle
+            type="source"
+            position={Position.Right}
+            className="!pointer-events-auto !z-[60] !h-[18px] !w-[18px] !border-[#4a4a4a] !bg-[#202020] !shadow-none"
+          />
+
+          {showAddAffordance && (
+            <>
+              <div className="pointer-events-none absolute right-[-50px] top-1/2 h-px w-[34px] -translate-y-1/2 bg-[#4a4a4a]" />
+              <button
+                type="button"
+                onClick={() => ctx?.openSelector()}
+                className="pointer-events-auto absolute right-[-76px] top-1/2 flex h-[24px] w-[24px] -translate-y-1/2 items-center justify-center rounded-[6px] border border-[#3f3f3f] bg-[#292929] text-[#9a9a9a] hover:text-white"
+              >
+                <PlusIcon className="size-3.5 stroke-[2.4]" />
+              </button>
+            </>
+          )}
         </div>
-        <Button
-          size="icon"
-          variant="ghost"
-          className="h-7 w-7 text-muted-foreground hover:text-foreground"
-          onClick={() => {
-            setNodes((nodes) => nodes.filter((n) => n.id !== id));
-            setEdges((edges) => edges.filter((e) => e.source !== id && e.target !== id));
-          }}
-        >
-          <Settings2Icon className="size-4" />
-        </Button>
       </div>
-      <div className="space-y-2 border-t px-3 py-3">
-        <p className="text-xs text-muted-foreground">Configure request (UI only)</p>
-        <select
-          value={method}
-          onChange={(e) => setMethod(e.target.value)}
-          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-xs text-foreground"
-        >
-          <option>GET</option>
-          <option>POST</option>
-          <option>PUT</option>
-          <option>DELETE</option>
-        </select>
-        <Input
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          className="h-8 text-xs"
-          placeholder="https://api.example.com"
-        />
-        <Button size="sm" variant="secondary" className="w-full" onClick={simulateRequest}>
-          Send test request
-        </Button>
-      </div>
-      {status && <p className="px-3 pb-2 text-xs text-muted-foreground">{status}</p>}
-      <Handle type="target" position={Position.Left} />
-      <Handle type="source" position={Position.Right} />
+      {!isConnectingFromThisNode && (
+        <p className="mt-[16px] text-center text-[24px] font-medium leading-[1.08] tracking-[-0.01em] text-foreground">
+          {data.label}
+        </p>
+      )}
     </div>
   );
 }
@@ -226,7 +219,7 @@ export function WorkflowEditor({
   const [selectorOpen, setSelectorOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [lastExecutedAt, setLastExecutedAt] = React.useState<string | null>(null);
-  const [isConnecting, setIsConnecting] = React.useState(false);
+  const [connectingFromNodeId, setConnectingFromNodeId] = React.useState<string | null>(null);
   const nodeTypes = React.useMemo(
     () => ({
       initialPlus: InitialPlusNode,
@@ -333,7 +326,7 @@ export function WorkflowEditor({
     <SelectorContext.Provider
       value={{
         openSelector: () => setSelectorOpen(true),
-        isConnecting,
+        connectingFromNodeId,
       }}
     >
       <div className="relative h-full w-full overflow-hidden">
@@ -346,8 +339,14 @@ export function WorkflowEditor({
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           connectionLineType={ConnectionLineType.Bezier}
-          onConnectStart={() => setIsConnecting(true)}
-          onConnectEnd={() => setIsConnecting(false)}
+          onConnectStart={(_, params) => {
+            if (params?.handleType === "source" && params?.nodeId) {
+              setConnectingFromNodeId(params.nodeId);
+              return;
+            }
+            setConnectingFromNodeId(null);
+          }}
+          onConnectEnd={() => setConnectingFromNodeId(null)}
           nodeTypes={nodeTypes}
           panOnDrag={false}
           selectionOnDrag
