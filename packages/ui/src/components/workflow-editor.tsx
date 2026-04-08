@@ -822,7 +822,14 @@ export function WorkflowEditor({
         </ReactFlow>
 
         {selectorOpen && (
-          <aside className="absolute inset-y-0 right-0 z-30 w-full max-w-md overflow-y-auto border-l border-border bg-background text-foreground shadow-2xl">
+          <>
+            <button
+              type="button"
+              aria-label="Close node selector"
+              className="absolute inset-0 z-20 cursor-default bg-transparent"
+              onClick={() => setSelectorOpen(false)}
+            />
+            <aside className="absolute inset-y-0 right-0 z-30 w-full max-w-md overflow-y-auto border-l border-border bg-background text-foreground shadow-2xl">
             <div className="flex items-start justify-between border-b border-border px-5 py-4">
               <div>
                 <h3 className="font-semibold">
@@ -895,7 +902,8 @@ export function WorkflowEditor({
               })}
               <Separator />
             </div>
-          </aside>
+            </aside>
+          </>
         )}
       </div>
     </SelectorContext.Provider>
