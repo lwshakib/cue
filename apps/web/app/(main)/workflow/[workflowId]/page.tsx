@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { WorkflowEditor } from "@repo/ui/components/workflow-editor"
 
 type WorkflowPageProps = {
   params: Promise<{ workflowId: string }>
@@ -51,11 +52,13 @@ export default function WorkflowByIdPage({ params }: WorkflowPageProps) {
   }, [workflowId])
 
   return (
-    <div className="space-y-4">
-      <header className="border-b border-muted-foreground/10 pb-3">
+    <div className="flex h-full w-full flex-col">
+      <header className="flex items-center border-b border-muted-foreground/10 px-6 py-4">
         <h1 className="text-xl font-semibold">{workflowName}</h1>
       </header>
-      <p className="text-sm text-muted-foreground">{workflowId}</p>
+      <div className="min-h-0 flex-1">
+        <WorkflowEditor />
+      </div>
     </div>
   )
 }

@@ -12,13 +12,9 @@ export default function WorkflowLayout({
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset className="bg-background">
-        <div className="mx-auto w-full max-w-[1400px]">
-          <div className="flex flex-1 flex-col overflow-y-auto">
-            <div className="flex-1 p-6">
-              {children}
-            </div>
-          </div>
+      <SidebarInset className="h-svh overflow-hidden bg-background">
+        <div className="flex h-full w-full flex-col">
+          {children}
         </div>
       </SidebarInset>
     </SidebarProvider>
