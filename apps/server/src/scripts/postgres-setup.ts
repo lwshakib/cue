@@ -83,10 +83,24 @@ async function setup() {
     `);
     logger.info("Table 'verification' verified/created.");
 
+    // Create Workflow table
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS workflow (
+        id VARCHAR(255) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        data JSONB NOT NULL DEFAULT '{}',
+        "createdAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        "userId" VARCHAR(255) NOT NULL REFERENCES "user"(id) ON DELETE CASCADE
+      );
+    `);
+    logger.info("Table 'workflow' verified/created.");
+
     // Add indexes
     await client.query(`CREATE INDEX IF NOT EXISTS "idx_session_userId" ON session("userId");`);
     await client.query(`CREATE INDEX IF NOT EXISTS "idx_account_userId" ON account("userId");`);
     await client.query(`CREATE INDEX IF NOT EXISTS "idx_verification_identifier" ON verification(identifier);`);
+    await client.query(`CREATE INDEX IF NOT EXISTS "idx_workflow_userId" ON workflow("userId");`);
 
     logger.info("PostgreSQL complete schema setup completed successfully.");
   } catch (error) {

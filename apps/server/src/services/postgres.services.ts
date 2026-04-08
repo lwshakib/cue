@@ -56,6 +56,30 @@ export class PostgresService {
     logger.info(`[PostgresService] User ${userId} email verified.`);
   }
 
+  public async updateUser(userId: string, data: { name?: string; image?: string | null }) {
+    const fields = [];
+    const values = [];
+    let i = 1;
+
+    if (data.name !== undefined) {
+      fields.push(`name = $${i++}`);
+      values.push(data.name);
+    }
+    if (data.image !== undefined) {
+      fields.push(`image = $${i++}`);
+      values.push(data.image);
+    }
+
+    if (fields.length === 0) return null;
+
+    values.push(userId);
+    const query = `UPDATE "user" SET ${fields.join(", ")} WHERE id = $${i} RETURNING *`;
+    const { rows } = await this.pool.query(query, values);
+    
+    logger.info(`[PostgresService] Updated User ${userId}: ${Object.keys(data).join(", ")}`);
+    return rows[0];
+  }
+
   // --- ACCOUNT OPERATIONS ---
 
   public async findAccount(providerId: string, accountId: string) {
@@ -141,6 +165,31 @@ export class PostgresService {
 
   public async deleteVerification(id: string) {
     await this.pool.query('DELETE FROM verification WHERE id = $1', [id]);
+  }
+
+  // --- WORKFLOW OPERATIONS ---
+
+  public async createWorkflow(data: { name: string; userId: string; data?: any }) {
+    const id = uuidv4();
+    const { rows } = await this.pool.query(
+      'INSERT INTO workflow (id, name, "userId", data) VALUES ($1, $2, $3, $4) RETURNING *',
+      [id, data.name, data.userId, data.data || {}]
+    );
+    logger.info(`[PostgresService] Created Workflow: ${data.name} for User: ${data.userId}`);
+    return rows[0];
+  }
+
+  public async findWorkflowsByUserId(userId: string) {
+    const { rows } = await this.pool.query(
+      'SELECT * FROM workflow WHERE "userId" = $1 ORDER BY "updatedAt" DESC',
+      [userId]
+    );
+    return rows;
+  }
+
+  public async deleteWorkflow(id: string) {
+    await this.pool.query('DELETE FROM workflow WHERE id = $1', [id]);
+    logger.info(`[PostgresService] Deleted Workflow: ${id}`);
   }
 }
 

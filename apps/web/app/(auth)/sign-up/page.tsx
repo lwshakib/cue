@@ -28,7 +28,7 @@ export default function SignUpPage() {
         name,
         email,
         password,
-        callbackURL: process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000",
+        callbackURL: `${process.env.NEXT_PUBLIC_BASE_URL}/home/workflows`,
       },
       {
         onRequest: () => {

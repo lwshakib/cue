@@ -45,9 +45,11 @@ export function NavSettings() {
             align="end"
             sideOffset={4}
           >
-            <DropdownMenuItem className="cursor-pointer">
-              <User className="mr-2 size-4" />
-              <span>Personal</span>
+            <DropdownMenuItem asChild>
+              <a href="/settings/personal" className="flex w-full items-center cursor-pointer">
+                <User className="mr-2 size-4" />
+                <span>Personal</span>
+              </a>
             </DropdownMenuItem>
             <DropdownMenuItem 
               className="cursor-pointer"

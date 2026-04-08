@@ -238,13 +238,14 @@ router.get("/session", async (req, res) => {
         id: sessionData.id,
         expiresAt: sessionData.expiresAt,
         token: sessionData.token,
-      },
-      user: {
-        id: sessionData.userId,
-        email: sessionData.email,
-        name: sessionData.name,
-        image: sessionData.image,
-        emailVerified: sessionData.emailVerified,
+        user: {
+          id: sessionData.userId,
+          email: sessionData.email,
+          name: sessionData.name,
+          image: sessionData.image,
+          emailVerified: sessionData.emailVerified,
+          role: sessionData.role,
+        },
       },
     });
   } catch (error: any) {

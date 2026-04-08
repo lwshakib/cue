@@ -5,13 +5,20 @@
  * optimizing session recovery and secure operations in Server Components and Actions.
  */
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-if (!BASE_URL) {
+if (!API_URL) {
   throw new Error(
     "[ServerAuth] Critical system configuration missing: NEXT_PUBLIC_API_URL. Please check your .env file."
   );
 }
+
+const normalizeAuthBaseUrl = (url: string) => {
+  const normalized = url.replace(/\/+$/, "");
+  return normalized.endsWith("/auth") ? normalized : `${normalized}/auth`;
+};
+
+const BASE_URL = normalizeAuthBaseUrl(API_URL);
 
 interface SignInOptions {
   body: {

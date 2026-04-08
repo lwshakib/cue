@@ -11,7 +11,11 @@
     "dev": "tsc-watch --onSuccess \"node dist/index.js\"",
     "build": "tsc -p .",
     "postgres:setup": "tsx src/scripts/postgres-setup.ts",
-    "postgres:teardown": "tsx src/scripts/postgres-teardown.ts"
+    "postgres:teardown": "tsx src/scripts/postgres-teardown.ts",
+    "bucket:setup": "tsx src/scripts/bucket-setup.ts",
+    "bucket:teardown": "tsx src/scripts/bucket-teardown.ts",
+    "infra:setup": "npm run postgres:setup && npm run bucket:setup",
+    "infra:teardown": "npm run postgres:teardown && npm run bucket:teardown"
   },
   "keywords": [],
   "author": "",
@@ -33,6 +37,8 @@
     "typescript": "^6.0.2"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1024.0",
+    "@aws-sdk/s3-request-presigner": "^3.1024.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.0",

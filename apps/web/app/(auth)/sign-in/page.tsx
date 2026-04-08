@@ -20,7 +20,7 @@ export default function SignInPage() {
       {
         email,
         password,
-        callbackURL: process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000",
+        callbackURL: `${process.env.NEXT_PUBLIC_BASE_URL}/home/workflows`,
       },
       {
         onRequest: () => {
@@ -28,7 +28,7 @@ export default function SignInPage() {
         },
         onSuccess: () => {
           toast.success("Signed in successfully");
-          router.push("/");
+          router.push("/home/workflows");
           setLoading(false);
         },
         onError: (ctx) => {
@@ -129,7 +129,7 @@ export default function SignInPage() {
                onClick={async () => {
                  await authClient.signIn.social({
                    provider: "google",
-                   callbackURL: process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000",
+                   callbackURL: `${process.env.NEXT_PUBLIC_BASE_URL}/home/workflows`,
                  });
                }}
                disabled={loading}

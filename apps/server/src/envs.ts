@@ -40,3 +40,11 @@ export const GITHUB_CLIENT_ID = getEnv("GITHUB_CLIENT_ID");
 export const GITHUB_CLIENT_SECRET = getEnv("GITHUB_CLIENT_SECRET");
 export const GITHUB_CALLBACK_URL = getEnv("GITHUB_CALLBACK_URL");
 export const RESEND_API_KEY = getEnv("RESEND_API_KEY");
+
+// --- MEDIA STORAGE (AWS S3 / CLOUDFLARE R2) ---
+export const AWS_REGION = getEnv("AWS_REGION", false, "auto");
+export const AWS_ENDPOINT = getEnv("AWS_ENDPOINT", false);
+export const AWS_ACCESS_KEY_ID = getEnv("AWS_ACCESS_KEY_ID");
+export const AWS_SECRET_ACCESS_KEY = getEnv("AWS_SECRET_ACCESS_KEY");
+export const AWS_S3_BUCKET_NAME = getEnv("AWS_S3_BUCKET_NAME");
+

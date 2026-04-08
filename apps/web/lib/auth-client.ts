@@ -48,7 +48,8 @@ const CookieStorage = {
  * Centralizes the authentication redirection and API logic for the Axonix ecosystem.
  */
 class AuthClient {
-  private readonly BASE_URL: string;
+  private readonly API_URL: string;
+  private readonly AUTH_URL: string;
   private readonly NEXT_PUBLIC_BASE_URL: string;
 
   public signIn = {
@@ -60,7 +61,7 @@ class AuthClient {
       const { provider } = options;
       const callbackURL = options.callbackURL || `${this.NEXT_PUBLIC_BASE_URL}/home/workflows`;
       
-      const url = new URL(`${this.BASE_URL}/${provider}`);
+      const url = new URL(`${this.AUTH_URL}/${provider}`);
       url.searchParams.set("callbackURL", callbackURL);
       
       window.location.href = url.toString();
@@ -73,7 +74,7 @@ class AuthClient {
     email: async (options: EmailSignInOptions, callbacks?: AuthOptions) => {
       callbacks?.onRequest?.();
       try {
-        const response = await fetch(`${this.BASE_URL}/login`, {
+        const response = await fetch(`${this.AUTH_URL}/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(options),
@@ -107,7 +108,7 @@ class AuthClient {
     email: async (options: EmailSignUpOptions, callbacks?: AuthOptions) => {
       callbacks?.onRequest?.();
       try {
-        const response = await fetch(`${this.BASE_URL}/register`, {
+        const response = await fetch(`${this.AUTH_URL}/register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(options),
@@ -142,7 +143,7 @@ class AuthClient {
         }
 
         try {
-          const response = await fetch(`${this.BASE_URL}/session`, {
+          const response = await fetch(`${this.AUTH_URL}/session`, {
             method: "GET",
             headers: {
               "Authorization": `Bearer ${token}`,
@@ -150,8 +151,8 @@ class AuthClient {
           });
 
           if (response.ok) {
-            const session = await response.json();
-            setData(session);
+            const data = await response.json();
+            setData(data.session);
           } else {
             setData(null);
             CookieStorage.remove("axonix_session_token");
@@ -176,7 +177,7 @@ class AuthClient {
   public async forgetPassword(options: { email: string; callbackURL?: string }, callbacks?: AuthOptions) {
     callbacks?.onRequest?.();
     try {
-      const response = await fetch(`${this.BASE_URL}/forgot-password`, {
+      const response = await fetch(`${this.AUTH_URL}/forgot-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(options),
@@ -199,7 +200,7 @@ class AuthClient {
   public async resetPassword(options: { newPassword: string; token: string }, callbacks?: AuthOptions) {
     callbacks?.onRequest?.();
     try {
-      const response = await fetch(`${this.BASE_URL}/reset-password`, {
+      const response = await fetch(`${this.AUTH_URL}/reset-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(options),
@@ -234,7 +235,13 @@ class AuthClient {
       );
     }
 
-    this.BASE_URL = apiURL;
+    const normalizedApiUrl = apiURL.replace(/\/+$/, "");
+    const normalizedAuthUrl = normalizedApiUrl.endsWith("/auth")
+      ? normalizedApiUrl
+      : `${normalizedApiUrl}/auth`;
+
+    this.API_URL = normalizedApiUrl;
+    this.AUTH_URL = normalizedAuthUrl;
     this.NEXT_PUBLIC_BASE_URL = baseURL;
   }
 }
