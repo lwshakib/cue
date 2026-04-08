@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { 
   Search, 
   Filter, 
@@ -54,6 +55,7 @@ const formatDate = (value: string) => {
 }
 
 export default function WorkflowsPage() {
+  const router = useRouter()
   const [workflows, setWorkflows] = React.useState<WorkflowItem[]>([])
   const [isLoading, setIsLoading] = React.useState(true)
 
@@ -128,6 +130,7 @@ export default function WorkflowsPage() {
           <div 
             key={wf.id} 
             className="flex items-center justify-between p-4 rounded-xl border border-muted-foreground/10 bg-muted/5 hover:bg-muted/10 transition-all group cursor-pointer"
+            onClick={() => router.push(`/workflow/${wf.id}`)}
           >
             <div className="space-y-1">
               <h3 className="font-semibold text-[15px] group-hover:text-red-500 transition-colors">{wf.name}</h3>
@@ -138,7 +141,7 @@ export default function WorkflowsPage() {
             <div className="flex items-center gap-3">
               <Badge variant="secondary" className="bg-muted/20 text-muted-foreground flex items-center gap-1 px-2.5 py-1 font-normal border-none">
                 <User className="size-3" />
-                <span className="text-[11px] font-medium">{wf.owner}</span>
+                <span className="text-[11px] font-medium">Personal</span>
               </Badge>
               <Button variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-foreground">
                 <MoreVertical className="size-4" />
