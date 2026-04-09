@@ -57,6 +57,22 @@ type WorkflowEditorProps = {
   initialNodes?: Node[];
   initialEdges?: Edge[];
   showChrome?: boolean;
+  onWorkflowChange?: (payload: { nodes: Node[]; edges: Edge[] }) => void;
+  onExecuteWorkflow?: (onStatus: (status: {
+    nodeId: string;
+    label: string;
+    status: "running" | "success" | "error" | "skipped";
+    message?: string;
+    statusCode?: number;
+  }) => void) => Promise<{
+    statuses: Array<{
+      nodeId: string;
+      label: string;
+      status: "running" | "success" | "error" | "skipped";
+      message?: string;
+      statusCode?: number;
+    }>;
+  } | null>;
 };
 
 type WorkflowNodeData = {
@@ -66,6 +82,8 @@ type WorkflowNodeData = {
   inputSample?: string;
   outputSample?: string;
 };
+
+type NodeRunStatus = "initial" | "loading" | "success" | "error";
 
 const EDGE_TYPE = "buttonEdge";
 
@@ -156,6 +174,7 @@ function deleteNodeAndConnections(
 const SelectorContext = React.createContext<{
   openSelector: (sourceNodeId?: string, mode?: "all" | "executions") => void;
   openNodeEditor: (nodeId: string, label: string, kind: "Trigger" | "Execution") => void;
+  getNodeStatus: (nodeId: string) => NodeRunStatus;
   connectingFromNodeId: string | null;
 } | null>(null);
 
@@ -322,6 +341,7 @@ function ManualTriggerNode({ id, data }: NodeProps<Node<WorkflowNodeData>>) {
     [edges, id]
   );
   const showAddAffordance = !isConnectingFromThisNode && !hasOutgoingConnection;
+  const runStatus = ctx?.getNodeStatus(id) ?? "initial";
 
   return (
     <div
@@ -331,6 +351,11 @@ function ManualTriggerNode({ id, data }: NodeProps<Node<WorkflowNodeData>>) {
       <NodeTopToolbar onDelete={() => deleteNodeAndConnections(id, setNodes, setEdges, getNodes)} />
       <div className="flex items-center justify-center">
         <div className="relative flex h-[94px] w-[94px] items-center justify-center rounded-[24px] border border-[#3a3a3a] bg-[#1f1f1f] shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
+          {runStatus === "loading" && (
+            <div className="pointer-events-none absolute -inset-1 rounded-[26px] border-2 border-primary/30 border-t-primary animate-spin" />
+          )}
+          {runStatus === "success" && <div className="pointer-events-none absolute -inset-1 rounded-[26px] ring-2 ring-emerald-500/70" />}
+          {runStatus === "error" && <div className="pointer-events-none absolute -inset-1 rounded-[26px] ring-2 ring-red-500/70" />}
           <MousePointerIcon className="size-11 text-[#8a8a8a] stroke-[1.8]" />
 
           {/* Visible connection source exactly on border center */}
@@ -375,6 +400,7 @@ function WebhookTriggerNode({ id, data }: NodeProps<Node<WorkflowNodeData>>) {
     [edges, id]
   );
   const showAddAffordance = !isConnectingFromThisNode && !hasOutgoingConnection;
+  const runStatus = ctx?.getNodeStatus(id) ?? "initial";
 
   return (
     <div
@@ -384,6 +410,11 @@ function WebhookTriggerNode({ id, data }: NodeProps<Node<WorkflowNodeData>>) {
       <NodeTopToolbar onDelete={() => deleteNodeAndConnections(id, setNodes, setEdges, getNodes)} />
       <div className="flex items-center justify-center">
         <div className="relative flex h-[94px] w-[94px] items-center justify-center rounded-[24px] border border-[#3a3a3a] bg-[#1f1f1f] shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
+          {runStatus === "loading" && (
+            <div className="pointer-events-none absolute -inset-1 rounded-[26px] border-2 border-primary/30 border-t-primary animate-spin" />
+          )}
+          {runStatus === "success" && <div className="pointer-events-none absolute -inset-1 rounded-[26px] ring-2 ring-emerald-500/70" />}
+          {runStatus === "error" && <div className="pointer-events-none absolute -inset-1 rounded-[26px] ring-2 ring-red-500/70" />}
           <WebhookIcon className="size-11 text-[#8a8a8a] stroke-[1.8]" />
           <Handle
             type="source"
@@ -423,6 +454,7 @@ function ScheduleTriggerNode({ id, data }: NodeProps<Node<WorkflowNodeData>>) {
     [edges, id]
   );
   const showAddAffordance = !isConnectingFromThisNode && !hasOutgoingConnection;
+  const runStatus = ctx?.getNodeStatus(id) ?? "initial";
 
   return (
     <div
@@ -432,6 +464,11 @@ function ScheduleTriggerNode({ id, data }: NodeProps<Node<WorkflowNodeData>>) {
       <NodeTopToolbar onDelete={() => deleteNodeAndConnections(id, setNodes, setEdges, getNodes)} />
       <div className="flex items-center justify-center">
         <div className="relative flex h-[94px] w-[94px] items-center justify-center rounded-[24px] border border-[#3a3a3a] bg-[#1f1f1f] shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
+          {runStatus === "loading" && (
+            <div className="pointer-events-none absolute -inset-1 rounded-[26px] border-2 border-primary/30 border-t-primary animate-spin" />
+          )}
+          {runStatus === "success" && <div className="pointer-events-none absolute -inset-1 rounded-[26px] ring-2 ring-emerald-500/70" />}
+          {runStatus === "error" && <div className="pointer-events-none absolute -inset-1 rounded-[26px] ring-2 ring-red-500/70" />}
           <CalendarClockIcon className="size-11 text-[#8a8a8a] stroke-[1.8]" />
           <Handle
             type="source"
@@ -471,6 +508,7 @@ function HttpRequestNode({ id, data }: NodeProps<Node<WorkflowNodeData>>) {
     [edges, id]
   );
   const showAddAffordance = !isConnectingFromThisNode && !hasOutgoingConnection;
+  const runStatus = ctx?.getNodeStatus(id) ?? "initial";
 
   return (
     <div
@@ -480,6 +518,11 @@ function HttpRequestNode({ id, data }: NodeProps<Node<WorkflowNodeData>>) {
       <NodeTopToolbar onDelete={() => deleteNodeAndConnections(id, setNodes, setEdges, getNodes)} />
       <div className="flex items-center justify-center">
         <div className="relative flex h-[94px] w-[94px] items-center justify-center rounded-[24px] border border-[#3a3a3a] bg-[#1f1f1f] shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
+          {runStatus === "loading" && (
+            <div className="pointer-events-none absolute -inset-1 rounded-[26px] border-2 border-primary/30 border-t-primary animate-spin" />
+          )}
+          {runStatus === "success" && <div className="pointer-events-none absolute -inset-1 rounded-[26px] ring-2 ring-emerald-500/70" />}
+          {runStatus === "error" && <div className="pointer-events-none absolute -inset-1 rounded-[26px] ring-2 ring-red-500/70" />}
           <GlobeIcon className="size-11 text-[#8a8a8a] stroke-[1.8]" />
 
           <Handle
@@ -810,6 +853,8 @@ export function WorkflowEditor({
   initialNodes = defaultInitialNodes,
   initialEdges = defaultInitialEdges,
   showChrome = true,
+  onWorkflowChange,
+  onExecuteWorkflow,
 }: WorkflowEditorProps) {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
@@ -828,6 +873,17 @@ export function WorkflowEditor({
   } | null>(null);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [lastExecutedAt, setLastExecutedAt] = React.useState<string | null>(null);
+  const [isExecuting, setIsExecuting] = React.useState(false);
+  const [nodeStatuses, setNodeStatuses] = React.useState<Record<string, NodeRunStatus>>({});
+  const [executionStatuses, setExecutionStatuses] = React.useState<
+    Array<{
+      nodeId: string;
+      label: string;
+      status: "running" | "success" | "error" | "skipped";
+      message?: string;
+      statusCode?: number;
+    }>
+  >([]);
   const [connectingFromNodeId, setConnectingFromNodeId] = React.useState<string | null>(null);
   const [nodeEditor, setNodeEditor] = React.useState<{
     isOpen: boolean;
@@ -922,6 +978,10 @@ export function WorkflowEditor({
       return changed ? normalized : current;
     });
   }, [setEdges]);
+
+  React.useEffect(() => {
+    onWorkflowChange?.({ nodes, edges });
+  }, [nodes, edges, onWorkflowChange]);
 
   const addNodeFromSelector = React.useCallback(
     (selection: (typeof nodeOptions)[number]) => {
@@ -1086,6 +1146,7 @@ export function WorkflowEditor({
             outputSample: data.outputSample || '{\n  "status": "ok"\n}',
           });
         },
+        getNodeStatus: (nodeId: string) => nodeStatuses[nodeId] ?? "initial",
         connectingFromNodeId,
       }}
     >
@@ -1158,14 +1219,127 @@ export function WorkflowEditor({
             <Panel position="bottom-center">
               <div className="flex flex-col items-center gap-2">
                 <Button
-                  onClick={() => setLastExecutedAt(new Date().toLocaleTimeString())}
+                  disabled={isExecuting}
+                  onClick={async () => {
+                    setIsExecuting(true);
+                    const now = new Date().toLocaleTimeString();
+                    setLastExecutedAt(now);
+                    const initialStatuses: Record<string, NodeRunStatus> = {};
+                    for (const node of nodes) {
+                      initialStatuses[node.id] = "initial";
+                    }
+                    const manualNode = nodes.find((n) => n.type === "manualTrigger");
+                    if (manualNode) {
+                      initialStatuses[manualNode.id] = "loading";
+                    }
+                    setNodeStatuses(initialStatuses);
+                    try {
+                      if (onExecuteWorkflow) {
+                        const streamedStatuses: Array<{
+                          nodeId: string;
+                          label: string;
+                          status: "running" | "success" | "error" | "skipped";
+                          message?: string;
+                          statusCode?: number;
+                        }> = [];
+                        const result = await onExecuteWorkflow((status) => {
+                          streamedStatuses.push(status);
+                          setExecutionStatuses([...streamedStatuses]);
+
+                          setNodeStatuses((current) => ({
+                            ...current,
+                            [status.nodeId]:
+                              status.status === "success"
+                                ? "success"
+                                : status.status === "error"
+                                  ? "error"
+                                  : status.status === "running"
+                                    ? "loading"
+                                    : "initial",
+                          }));
+                        });
+                        setExecutionStatuses(result?.statuses ?? []);
+                        if (result?.statuses?.length) {
+                          const mapped: Record<string, NodeRunStatus> = { ...initialStatuses };
+
+                          for (const item of result.statuses) {
+                            mapped[item.nodeId] =
+                              item.status === "success"
+                                ? "success"
+                                : item.status === "error"
+                                  ? "error"
+                                  : item.status === "running"
+                                    ? "loading"
+                                    : "initial";
+                            setNodeStatuses({ ...mapped });
+                          }
+                        } else {
+                          setNodeStatuses(initialStatuses);
+                        }
+                      } else {
+                        setExecutionStatuses([
+                          {
+                            nodeId: "manual",
+                            label: "Manual Trigger",
+                            status: "success",
+                            message: "Executed locally",
+                          },
+                        ]);
+                        if (manualNode) {
+                          setNodeStatuses({
+                            ...initialStatuses,
+                            [manualNode.id]: "success",
+                          });
+                        } else {
+                          setNodeStatuses(initialStatuses);
+                        }
+                      }
+                    } finally {
+                      setIsExecuting(false);
+                    }
+                  }}
                 >
-                  Execute workflow
+                  {isExecuting ? "Running..." : "Execute workflow"}
                 </Button>
                 {lastExecutedAt && (
                   <p className="text-xs text-muted-foreground">
                     Last executed at {lastExecutedAt}
                   </p>
+                )}
+                {executionStatuses.length > 0 && (
+                  <div className="max-h-48 w-[420px] overflow-y-auto rounded-md border border-border bg-background/95 p-2">
+                    <div className="space-y-1">
+                      {executionStatuses.map((item, index) => (
+                        <div
+                          key={`${item.nodeId}-${index}`}
+                          className="flex items-center justify-between rounded px-2 py-1 text-xs"
+                        >
+                          <div className="min-w-0">
+                            <p className="truncate font-medium text-foreground">{item.label}</p>
+                            {item.message && (
+                              <p className="truncate text-muted-foreground">
+                                {item.message}
+                                {typeof item.statusCode === "number" ? ` (${item.statusCode})` : ""}
+                              </p>
+                            )}
+                          </div>
+                          <span
+                            className={
+                              item.status === "success"
+                                ? "text-emerald-500"
+                                : item.status === "error"
+                                  ? "text-red-500"
+                                  : item.status === "running"
+                                    ? "text-amber-500"
+                                    : "text-muted-foreground"
+                            }
+                          >
+                            {item.status}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
             </Panel>

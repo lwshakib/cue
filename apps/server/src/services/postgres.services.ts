@@ -210,6 +210,48 @@ export class PostgresService {
     return rows;
   }
 
+  public async findWorkflowByIdForUser(id: string, userId: string) {
+    const { rows } = await this.pool.query(
+      'SELECT * FROM workflow WHERE id = $1 AND "userId" = $2',
+      [id, userId]
+    );
+    return rows[0] || null;
+  }
+
+  public async updateWorkflowForUser(
+    id: string,
+    userId: string,
+    updates: { name?: string; data?: unknown }
+  ) {
+    const fields: string[] = [];
+    const values: unknown[] = [];
+    let index = 1;
+
+    if (updates.name !== undefined) {
+      fields.push(`name = $${index++}`);
+      values.push(updates.name);
+    }
+
+    if (updates.data !== undefined) {
+      fields.push(`data = $${index++}`);
+      values.push(updates.data);
+    }
+
+    if (fields.length === 0) {
+      return this.findWorkflowByIdForUser(id, userId);
+    }
+
+    values.push(id);
+    values.push(userId);
+
+    const { rows } = await this.pool.query(
+      `UPDATE workflow SET ${fields.join(", ")} WHERE id = $${index++} AND "userId" = $${index} RETURNING *`,
+      values
+    );
+
+    return rows[0] || null;
+  }
+
   public async deleteWorkflowForUser(id: string, userId: string) {
     const result = await this.pool.query(
       'DELETE FROM workflow WHERE id = $1 AND "userId" = $2',

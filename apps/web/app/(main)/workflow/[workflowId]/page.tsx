@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { WorkflowEditor } from "@repo/ui/components/workflow-editor"
+import type { Edge, Node } from "@xyflow/react"
 
 type WorkflowPageProps = {
   params: Promise<{ workflowId: string }>
@@ -10,6 +11,10 @@ type WorkflowPageProps = {
 type WorkflowItem = {
   id: string
   name: string
+  data?: {
+    nodes?: Node[]
+    edges?: Edge[]
+  }
 }
 
 const getSessionToken = () => {
@@ -23,6 +28,13 @@ const getSessionToken = () => {
 export default function WorkflowByIdPage({ params }: WorkflowPageProps) {
   const { workflowId } = React.use(params)
   const [workflowName, setWorkflowName] = React.useState<string>(workflowId)
+  const [initialNodes, setInitialNodes] = React.useState<Node[] | undefined>(undefined)
+  const [initialEdges, setInitialEdges] = React.useState<Edge[] | undefined>(undefined)
+  const [isReady, setIsReady] = React.useState(false)
+  const pendingSaveRef = React.useRef<{ nodes: Node[]; edges: Edge[] } | null>(null)
+  const saveTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
+  const isSavingRef = React.useRef(false)
+  const lastSavedPayloadRef = React.useRef<string>("")
 
   React.useEffect(() => {
     const run = async () => {
@@ -30,7 +42,7 @@ export default function WorkflowByIdPage({ params }: WorkflowPageProps) {
       if (!token) return
 
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/workflow`, {
+        const response = await fetch(`/api/workflow/${workflowId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -38,17 +50,135 @@ export default function WorkflowByIdPage({ params }: WorkflowPageProps) {
 
         if (!response.ok) return
         const payload = await response.json()
-        const workflows: WorkflowItem[] = payload.workflows ?? []
-        const current = workflows.find((item) => item.id === workflowId)
+        const current: WorkflowItem | undefined = payload.workflow
         if (current?.name) {
           setWorkflowName(current.name)
         }
+        if (current?.data && Array.isArray(current.data.nodes)) {
+          setInitialNodes(current.data.nodes)
+        }
+        if (current?.data && Array.isArray(current.data.edges)) {
+          setInitialEdges(current.data.edges)
+        }
       } catch (error) {
         console.error("[WorkflowPage] Failed to resolve workflow name:", error)
+      } finally {
+        setIsReady(true)
       }
     }
 
     void run()
+  }, [workflowId])
+
+  const flushPersist = React.useCallback(async () => {
+    if (isSavingRef.current || !pendingSaveRef.current) return
+    const payload = pendingSaveRef.current
+    const serialized = JSON.stringify(payload)
+    if (serialized === lastSavedPayloadRef.current) {
+      pendingSaveRef.current = null
+      return
+    }
+
+    const token = getSessionToken()
+    if (!token) return
+
+    isSavingRef.current = true
+    pendingSaveRef.current = null
+
+    try {
+      await fetch(`/api/workflow/${workflowId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          data: payload,
+        }),
+      })
+      lastSavedPayloadRef.current = serialized
+    } catch (error) {
+      console.error("[WorkflowPage] Failed to persist workflow:", error)
+      // Keep last payload queued for retry on next change tick
+      pendingSaveRef.current = payload
+    } finally {
+      isSavingRef.current = false
+      if (pendingSaveRef.current) {
+        if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+        saveTimerRef.current = setTimeout(() => {
+          void flushPersist()
+        }, 600)
+      }
+    }
+  }, [workflowId])
+
+  const persistWorkflow = React.useCallback(
+    async (payload: { nodes: Node[]; edges: Edge[] }) => {
+      pendingSaveRef.current = payload
+      if (saveTimerRef.current) clearTimeout(saveTimerRef.current)
+      saveTimerRef.current = setTimeout(() => {
+        void flushPersist()
+      }, 450)
+    },
+    [flushPersist]
+  )
+
+  const executeWorkflow = React.useCallback(async (onStatus: (status: {
+    nodeId: string
+    label: string
+    status: "running" | "success" | "error" | "skipped"
+    message?: string
+    statusCode?: number
+  }) => void) => {
+    const token = getSessionToken()
+    if (!token) return null
+
+    try {
+      const streamUrl = new URL(`/api/workflow/${workflowId}/execute/stream`, window.location.origin)
+      streamUrl.searchParams.set("token", token)
+
+      return await new Promise<{
+        workflowId: string
+        executedAt: string
+        statuses: Array<{
+          nodeId: string
+          label: string
+          status: "running" | "success" | "error" | "skipped"
+          message?: string
+          statusCode?: number
+        }>
+      } | null>((resolve) => {
+        const eventSource = new EventSource(streamUrl.toString())
+
+        eventSource.addEventListener("node-status", (event) => {
+          try {
+            const data = JSON.parse((event as MessageEvent).data)
+            onStatus(data)
+          } catch (error) {
+            console.error("[WorkflowPage] Invalid node-status payload:", error)
+          }
+        })
+
+        eventSource.addEventListener("completed", (event) => {
+          try {
+            const data = JSON.parse((event as MessageEvent).data)
+            resolve(data)
+          } catch {
+            resolve(null)
+          } finally {
+            eventSource.close()
+          }
+        })
+
+        eventSource.addEventListener("error", () => {
+          eventSource.close()
+          resolve(null)
+        })
+      })
+    } catch (error) {
+      console.error("[WorkflowPage] Execute workflow failed:", error)
+      return null
+    }
   }, [workflowId])
 
   return (
@@ -57,7 +187,14 @@ export default function WorkflowByIdPage({ params }: WorkflowPageProps) {
         <h1 className="text-xl font-semibold">{workflowName}</h1>
       </header>
       <div className="min-h-0 flex-1">
-        <WorkflowEditor />
+        {isReady && (
+          <WorkflowEditor
+            initialNodes={initialNodes}
+            initialEdges={initialEdges}
+            onWorkflowChange={persistWorkflow}
+            onExecuteWorkflow={executeWorkflow}
+          />
+        )}
       </div>
     </div>
   )
