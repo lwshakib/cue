@@ -198,7 +198,7 @@ export default function LandingPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               
-              {/* Experiment 1 */}
+              {/* Workflow 1: Market Intelligence */}
               <div className="group relative bg-neutral-950 border border-white/10 hover:border-cyan-500/50 transition-colors duration-500 p-5 md:p-6 flex flex-col justify-between min-h-[280px] rounded-none overflow-hidden cursor-crosshair reveal-on-scroll magnetic-card" style={{ ["--reveal-delay" as any]: "90ms" }}>
                 <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0"></div>
                 <div className="absolute top-0 left-0 w-full h-[1px] overflow-hidden"><div className="h-full w-1/3 bg-cyan-400 animate-scan-line hidden group-hover:block"></div></div>
@@ -206,21 +206,21 @@ export default function LandingPage() {
                 <div className="relative z-10">
                   <div className="flex justify-between items-start mb-8">
                     <div className="w-8 h-8 md:w-10 md:h-10 border border-white/10 bg-black flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform duration-500 rounded-none">
-                      <Cpu className="w-5 h-5" />
+                      <Search className="w-5 h-5" />
                     </div>
-                    <span className="text-xs font-orbitron tracking-[0.2em] text-neutral-600 border border-white/5 px-2 py-1 uppercase">Live Demo</span>
+                    <span className="text-[10px] font-sans font-medium tracking-widest text-neutral-600 border border-white/5 px-2 py-1 uppercase">Intelligence</span>
                   </div>
-                  <h3 className="text-lg md:text-xl font-normal tracking-tight mb-2 text-white font-orbitron uppercase group-hover:text-cyan-300 transition-colors">Neural Particle Field</h3>
-                  <p className="text-sm text-neutral-500 font-light leading-relaxed">
-                    100,000 instanced geometries reacting to cursor velocity and audio input via custom fragment shaders.
+                  <h3 className="text-lg md:text-xl font-normal tracking-tight mb-2 text-white font-orbitron group-hover:text-cyan-300 transition-colors">Market Intelligence</h3>
+                  <p className="text-sm text-neutral-500 font-light leading-relaxed font-sans mt-2">
+                    Autonomous deep-web research and competitor analysis. Surfacing high-signal opportunities in real-time without human oversight.
                   </p>
                 </div>
-                <div className="relative z-10 flex items-center gap-2 text-cyan-500 text-xs font-orbitron tracking-[0.2em] uppercase mt-6 opacity-50 group-hover:opacity-100 transition-opacity">
-                  Initialize <ArrowRight className="w-4 h-4" />
+                <div className="relative z-10 flex items-center gap-2 text-cyan-500 text-[10px] font-sans font-bold tracking-widest uppercase mt-6 opacity-50 group-hover:opacity-100 transition-opacity">
+                  Learn more <ArrowRight className="w-4 h-4" />
                 </div>
               </div>
 
-              {/* Experiment 2 */}
+              {/* Workflow 2: Autonomous Operations */}
               <div className="group relative bg-neutral-950 border border-white/10 hover:border-cyan-500/50 transition-colors duration-500 p-5 md:p-6 flex flex-col justify-between min-h-[280px] rounded-none overflow-hidden cursor-crosshair reveal-on-scroll magnetic-card" style={{ ["--reveal-delay" as any]: "180ms" }}>
                 <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0"></div>
                 <div className="absolute top-0 left-0 w-full h-[1px] overflow-hidden"><div className="h-full w-1/3 bg-cyan-400 animate-scan-line hidden group-hover:block"></div></div>
@@ -230,19 +230,19 @@ export default function LandingPage() {
                     <div className="w-8 h-8 md:w-10 md:h-10 border border-white/10 bg-black flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform duration-500 rounded-none">
                       <Network className="w-5 h-5" />
                     </div>
-                    <span className="text-xs font-orbitron tracking-[0.2em] text-neutral-600 border border-white/5 px-2 py-1 uppercase">Interactive</span>
+                    <span className="text-[10px] font-sans font-medium tracking-widest text-neutral-600 border border-white/5 px-2 py-1 uppercase">Deployment</span>
                   </div>
-                  <h3 className="text-lg md:text-xl font-normal tracking-tight mb-2 text-white font-orbitron uppercase group-hover:text-cyan-300 transition-colors">Image Reveal Shader</h3>
-                  <p className="text-sm text-neutral-500 font-light leading-relaxed">
-                    Liquid distortion effects applied to DOM images mapped onto WebGL planes with noise displacement.
+                  <h3 className="text-lg md:text-xl font-normal tracking-tight mb-2 text-white font-orbitron group-hover:text-cyan-300 transition-colors">Autonomous Operations</h3>
+                  <p className="text-sm text-neutral-500 font-light leading-relaxed font-sans mt-2">
+                    Brand-aligned content generation and automated cross-platform distribution. Maintaining a consistent voice across all digital channels.
                   </p>
                 </div>
-                <div className="relative z-10 flex items-center gap-2 text-cyan-500 text-xs font-orbitron tracking-[0.2em] uppercase mt-6 opacity-50 group-hover:opacity-100 transition-opacity">
-                  Initialize <ArrowRight className="w-4 h-4" />
+                <div className="relative z-10 flex items-center gap-2 text-cyan-500 text-[10px] font-sans font-bold tracking-widest uppercase mt-6 opacity-50 group-hover:opacity-100 transition-opacity">
+                  Learn more <ArrowRight className="w-4 h-4" />
                 </div>
               </div>
 
-              {/* Experiment 3 */}
+              {/* Workflow 3: Response Automation */}
               <div className="group relative bg-neutral-950 border border-white/10 hover:border-cyan-500/50 transition-colors duration-500 p-5 md:p-6 flex flex-col justify-between min-h-[280px] rounded-none overflow-hidden cursor-crosshair reveal-on-scroll magnetic-card" style={{ ["--reveal-delay" as any]: "270ms" }}>
                 <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-0"></div>
                 <div className="absolute top-0 left-0 w-full h-[1px] overflow-hidden"><div className="h-full w-1/3 bg-cyan-400 animate-scan-line hidden group-hover:block"></div></div>
@@ -252,15 +252,15 @@ export default function LandingPage() {
                     <div className="w-8 h-8 md:w-10 md:h-10 border border-white/10 bg-black flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform duration-500 rounded-none">
                       <ShieldCheck className="w-5 h-5" />
                     </div>
-                    <span className="text-xs font-orbitron tracking-[0.2em] text-neutral-600 border border-white/5 px-2 py-1 uppercase">Motion</span>
+                    <span className="text-[10px] font-sans font-medium tracking-widest text-neutral-600 border border-white/5 px-2 py-1 uppercase">Support</span>
                   </div>
-                  <h3 className="text-lg md:text-xl font-normal tracking-tight mb-2 text-white font-orbitron uppercase group-hover:text-cyan-300 transition-colors">Scroll Scan Engine</h3>
-                  <p className="text-sm text-neutral-500 font-light leading-relaxed">
-                    Tying camera z-depth and post-processing bloom intensity directly to native browser scroll velocity.
+                  <h3 className="text-lg md:text-xl font-normal tracking-tight mb-2 text-white font-orbitron group-hover:text-cyan-300 transition-colors">Response Automation</h3>
+                  <p className="text-sm text-neutral-500 font-light leading-relaxed font-sans mt-2">
+                    Intelligent ticket triage and automated resolution using custom internal knowledge. High-speed, high-accuracy customer orchestration.
                   </p>
                 </div>
-                <div className="relative z-10 flex items-center gap-2 text-cyan-500 text-xs font-orbitron tracking-[0.2em] uppercase mt-6 opacity-50 group-hover:opacity-100 transition-opacity">
-                  Initialize <ArrowRight className="w-4 h-4" />
+                <div className="relative z-10 flex items-center gap-2 text-cyan-500 text-[10px] font-sans font-bold tracking-widest uppercase mt-6 opacity-50 group-hover:opacity-100 transition-opacity">
+                  Learn more <ArrowRight className="w-4 h-4" />
                 </div>
               </div>
             </div>
@@ -272,13 +272,13 @@ export default function LandingPage() {
           <div className="max-w-[1300px] mx-auto">
             <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4 reveal-on-scroll border-b border-white/10 pb-6" style={{ ["--reveal-delay" as any]: "0ms" }}>
               <div className="">
-                <p className="uppercase flex items-center gap-3 text-xs md:text-sm text-cyan-500 tracking-[0.4em] font-orbitron mb-3">
+                <p className="uppercase flex items-center gap-3 text-xs md:text-sm text-cyan-500 tracking-[0.4em] font-sans font-bold mb-3">
                   <span className="bg-cyan-500 w-6 md:w-8 h-[1px]"></span> Interactive simulation
                 </p>
-                <h2 className="text-2xl md:text-4xl uppercase font-normal text-white tracking-tight font-orbitron">Agents operation system</h2>
+                <h2 className="text-2xl md:text-4xl font-normal text-white tracking-tight font-orbitron uppercase">Agent Command Center</h2>
               </div>
-              <p className="text-xs md:text-sm text-neutral-500 font-orbitron tracking-[0.2em] uppercase max-w-sm md:text-right">
-                Real-time multi-agent processing mapped visually.
+              <p className="text-xs md:text-sm text-neutral-500 font-sans font-medium tracking-[0.2em] uppercase max-w-sm md:text-right">
+                Real-time multi-agent processing orchestrated visually.
               </p>
             </div>
 
@@ -290,34 +290,34 @@ export default function LandingPage() {
                 {/* Top: Logo & Search */}
                 <div className="p-4 flex flex-col gap-4 border-b border-[#222]">
                   <div className="flex items-center gap-3">
-                    <div className="w-7 h-7 bg-[#2563eb] rounded-lg flex items-center justify-center text-white">
-                      <Infinity className="w-4 h-4" />
+                    <div className="w-7 h-7 bg-cyan-600 rounded-lg flex items-center justify-center text-white">
+                      <Logo className="w-4 h-4" />
                     </div>
-                    <span className="text-sm font-normal text-white">Fleet Command</span>
+                    <span className="text-sm font-semibold text-white font-sans">Axonix Control</span>
                   </div>
                   <div className="bg-[#141414] border border-[#222] rounded-md flex items-center px-2.5 py-1.5 text-neutral-400">
                     <Search className="w-4 h-4 mr-2" />
-                    <span className="text-xs font-light">Search agents, logs...</span>
+                    <span className="text-xs font-light font-sans">Search agents, logs...</span>
                     <kbd className="ml-auto text-xs font-mono bg-[#222] px-1.5 py-0.5 rounded border border-[#333]">⌘K</kbd>
                   </div>
                 </div>
                 
                 {/* Nav Menu */}
-                <nav className="flex-1 overflow-y-auto p-3 space-y-6">
+                <nav className="flex-1 overflow-y-auto p-3 space-y-6 font-sans">
                   {/* HQ */}
                   <div>
-                    <h3 className="px-2 text-xs font-light tracking-widest text-neutral-500 mb-2 uppercase">HQ</h3>
+                    <h3 className="px-2 text-[10px] font-bold tracking-widest text-neutral-500 mb-2 uppercase">Command</h3>
                     <div className="space-y-0.5">
                       <a href="#" className="flex items-center gap-3 px-2 py-1.5 text-neutral-400 hover:text-white hover:bg-[#1a1a1a] rounded-md transition-colors">
                         <Home className="w-4 h-4" />
-                        <span className="text-xs font-light">Overview</span>
+                        <span className="text-xs">Overview</span>
                       </a>
                       <a href="#" className="flex items-center justify-between px-2 py-1.5 text-neutral-400 hover:text-white hover:bg-[#1a1a1a] rounded-md transition-colors">
                         <div className="flex items-center gap-3">
                           <Inbox className="w-4 h-4" />
-                          <span className="text-xs font-light">Agent Inbox</span>
+                          <span className="text-xs">Inbound Queue</span>
                         </div>
-                        <span className="bg-[#1e3a8a] text-[#60a5fa] text-xs px-2 py-0.5 rounded-full font-light">12</span>
+                        <span className="bg-cyan-950 text-cyan-400 text-[10px] px-2 py-0.5 rounded-full font-bold">12</span>
                       </a>
                     </div>
                   </div>
@@ -366,11 +366,11 @@ export default function LandingPage() {
                     <span className="text-white font-normal">Sales SDR Swarm</span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-2 px-3 py-1.5 text-xs text-neutral-300 border border-[#222] hover:bg-[#141414] rounded-md transition-colors font-light">
-                      <Play className="w-3.5 h-3.5" /> Simulate Run
+                    <button className="flex items-center gap-2 px-3 py-1.5 text-xs text-neutral-300 border border-[#222] hover:bg-[#141414] rounded-md transition-colors font-sans">
+                      <Play className="w-3.5 h-3.5" /> Preview Run
                     </button>
-                    <button className="px-4 py-1.5 text-xs text-white bg-[#0284c7] hover:bg-[#0369a1] rounded-md font-normal transition-colors shadow-[0_0_15px_rgba(2,132,199,0.3)]">
-                      Activate Swarm
+                    <button className="px-4 py-1.5 text-xs text-white bg-cyan-600 hover:bg-cyan-700 rounded-md font-sans font-semibold transition-colors shadow-[0_0_15px_rgba(8,145,178,0.3)]">
+                      Deploy Swarm
                     </button>
                   </div>
                 </header>
@@ -578,17 +578,17 @@ export default function LandingPage() {
                 <div className="absolute top-0 left-0 w-full h-[2px] bg-white/5 group-hover:bg-cyan-500 transition-colors duration-500"></div>
                 <div className="flex justify-between items-start mb-6">
                   <div className="flex group-hover:scale-110 transition-transform duration-500 text-cyan-400 bg-neutral-950 w-8 h-8 md:w-10 md:h-10 border-white/10 border rounded-none items-center justify-center">
-                     <Cpu className="w-5 h-5" />
+                     <Search className="w-5 h-5" />
                   </div>
-                  <span className="flex items-center gap-1.5 text-xs font-orbitron tracking-[0.2em] text-cyan-500 uppercase">
-                    <span className="w-1.5 h-1.5 bg-cyan-500 animate-pulse"></span> Online
+                  <span className="flex items-center gap-1.5 text-[10px] font-sans font-bold tracking-widest text-cyan-500 uppercase">
+                    <span className="w-1.5 h-1.5 bg-cyan-500 animate-pulse"></span> Active
                   </span>
                 </div>
-                <h3 className="text-lg md:text-xl font-normal tracking-tight text-white font-orbitron uppercase mb-1">Nexus-7</h3>
-                <p className="text-xs md:text-sm text-neutral-500 font-light mb-5">Data Synthesis & Pattern Recognition</p>
+                <h3 className="text-lg md:text-xl font-normal tracking-tight text-white font-orbitron uppercase mb-1">Research Hub</h3>
+                <p className="text-xs md:text-sm text-neutral-500 font-light font-sans mb-5">Deep Domain Knowledge Extraction</p>
                 <div className="space-y-2 border-t border-white/5 pt-3">
-                   <div className="flex justify-between text-xs md:text-sm font-mono text-neutral-400"><span className="uppercase tracking-wider">Throughput</span> <span className="text-cyan-400">1.2 TB/s</span></div>
-                   <div className="flex justify-between text-xs md:text-sm font-mono text-neutral-400"><span className="uppercase tracking-wider">Nodes</span> <span className="text-cyan-400">14,020</span></div>
+                   <div className="flex justify-between text-xs md:text-sm font-sans text-neutral-400 font-medium"><span className="uppercase tracking-wider">Analysis Rate</span> <span className="text-cyan-400">High</span></div>
+                   <div className="flex justify-between text-xs md:text-sm font-sans text-neutral-400 font-medium"><span className="uppercase tracking-wider">Reliability</span> <span className="text-cyan-400">99.9%</span></div>
                 </div>
               </div>
 
@@ -599,15 +599,15 @@ export default function LandingPage() {
                   <div className="w-8 h-8 md:w-10 md:h-10 border border-white/10 bg-neutral-950 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform duration-500 rounded-none">
                      <Network className="w-5 h-5" />
                   </div>
-                  <span className="flex items-center gap-1.5 text-xs font-orbitron tracking-[0.2em] text-cyan-500 uppercase">
-                    <span className="w-1.5 h-1.5 bg-cyan-500 animate-pulse"></span> Online
+                  <span className="flex items-center gap-1.5 text-[10px] font-sans font-bold tracking-widest text-cyan-500 uppercase">
+                    <span className="w-1.5 h-1.5 bg-cyan-500 animate-pulse"></span> Active
                   </span>
                 </div>
-                <h3 className="text-lg md:text-xl font-normal tracking-tight text-white font-orbitron uppercase mb-1">Aether-Core</h3>
-                <p className="text-xs md:text-sm text-neutral-500 font-light mb-5">Generative Architecture Framework</p>
+                <h3 className="text-lg md:text-xl font-normal tracking-tight text-white font-orbitron uppercase mb-1">Growth Engine</h3>
+                <p className="text-xs md:text-sm text-neutral-500 font-light font-sans mb-5">Autonomous Lead Generation Cycle</p>
                 <div className="space-y-2 border-t border-white/5 pt-3">
-                   <div className="flex justify-between text-xs md:text-sm font-mono text-neutral-400"><span className="uppercase tracking-wider">Latency</span> <span className="text-cyan-400">4ms</span></div>
-                   <div className="flex justify-between text-xs md:text-sm font-mono text-neutral-400"><span className="uppercase tracking-wider">Uptime</span> <span className="text-cyan-400">99.99%</span></div>
+                   <div className="flex justify-between text-xs md:text-sm font-sans text-neutral-400 font-medium"><span className="uppercase tracking-wider">Daily Outreach</span> <span className="text-cyan-400">2.5k</span></div>
+                   <div className="flex justify-between text-xs md:text-sm font-sans text-neutral-400 font-medium"><span className="uppercase tracking-wider">Automation</span> <span className="text-cyan-400">100%</span></div>
                 </div>
               </div>
 
@@ -618,15 +618,15 @@ export default function LandingPage() {
                   <div className="w-8 h-8 md:w-10 md:h-10 border border-white/10 bg-neutral-950 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform duration-500 rounded-none">
                      <ShieldCheck className="w-5 h-5" />
                   </div>
-                  <span className="flex items-center gap-1.5 text-xs font-orbitron tracking-[0.2em] text-cyan-500 uppercase">
-                    <span className="w-1.5 h-1.5 bg-cyan-500 animate-pulse"></span> Online
+                  <span className="flex items-center gap-1.5 text-[10px] font-sans font-bold tracking-widest text-cyan-500 uppercase">
+                    <span className="w-1.5 h-1.5 bg-cyan-500 animate-pulse"></span> Active
                   </span>
                 </div>
-                <h3 className="text-lg md:text-xl font-normal tracking-tight text-white font-orbitron uppercase mb-1">Cipher-9</h3>
-                <p className="text-xs md:text-sm text-neutral-500 font-light mb-5">Cryptographic Validation & Security</p>
+                <h3 className="text-lg md:text-xl font-normal tracking-tight text-white font-orbitron uppercase mb-1">Security Sentry</h3>
+                <p className="text-xs md:text-sm text-neutral-500 font-light font-sans mb-5">Compliance & Safety Guardrails</p>
                 <div className="space-y-2 border-t border-white/5 pt-3">
-                   <div className="flex justify-between text-xs md:text-sm font-mono text-neutral-400"><span className="uppercase tracking-wider">Hashes</span> <span className="text-cyan-400">450M/s</span></div>
-                   <div className="flex justify-between text-xs md:text-sm font-mono text-neutral-400"><span className="uppercase tracking-wider">Integrity</span> <span className="text-cyan-400">100%</span></div>
+                   <div className="flex justify-between text-xs md:text-sm font-sans text-neutral-400 font-medium"><span className="uppercase tracking-wider">Risk Score</span> <span className="text-cyan-400">Minimal</span></div>
+                   <div className="flex justify-between text-xs md:text-sm font-sans text-neutral-400 font-medium"><span className="uppercase tracking-wider">Integrity</span> <span className="text-cyan-400">Verified</span></div>
                 </div>
               </div>
 
@@ -637,15 +637,15 @@ export default function LandingPage() {
                   <div className="w-8 h-8 md:w-10 md:h-10 border border-white/10 bg-neutral-950 flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform duration-500 rounded-none">
                      <Radar className="w-5 h-5" />
                   </div>
-                  <span className="flex items-center gap-1.5 text-xs font-orbitron tracking-[0.2em] text-amber-500 uppercase">
+                  <span className="flex items-center gap-1.5 text-[10px] font-sans font-bold tracking-widest text-amber-500 uppercase">
                     <span className="w-1.5 h-1.5 bg-amber-500 animate-pulse"></span> Standby
                   </span>
                 </div>
-                <h3 className="text-lg md:text-xl font-normal tracking-tight text-white font-orbitron uppercase mb-1">Vanguard-X</h3>
-                <p className="text-xs md:text-sm text-neutral-500 font-light mb-5">Predictive Telemetry & Forecasting</p>
+                <h3 className="text-lg md:text-xl font-normal tracking-tight text-white font-orbitron uppercase mb-1">Strategic Pilot</h3>
+                <p className="text-xs md:text-sm text-neutral-500 font-light font-sans mb-5">Market Sentiment & Forecasting</p>
                 <div className="space-y-2 border-t border-white/5 pt-3">
-                   <div className="flex justify-between text-xs md:text-sm font-mono text-neutral-400"><span className="uppercase tracking-wider">Forecasts</span> <span className="text-cyan-400">1.4B</span></div>
-                   <div className="flex justify-between text-xs md:text-sm font-mono text-neutral-400"><span className="uppercase tracking-wider">Accuracy</span> <span className="text-cyan-400">96.4%</span></div>
+                   <div className="flex justify-between text-xs md:text-sm font-sans text-neutral-400 font-medium"><span className="uppercase tracking-wider">Insight Yield</span> <span className="text-cyan-400">High</span></div>
+                   <div className="flex justify-between text-xs md:text-sm font-sans text-neutral-400 font-medium"><span className="uppercase tracking-wider">Accuracy</span> <span className="text-cyan-400">96.4%</span></div>
                 </div>
               </div>
             </div>
@@ -672,9 +672,7 @@ export default function LandingPage() {
               <p className="text-sm md:text-base text-neutral-400 font-light leading-relaxed border-l border-cyan-500/30 pl-4 py-1 text-pretty">
                 Deploy specialized autonomous units tailored for high-impact organizational roles. Operating seamlessly in the background to drive acquisition, streamline internal operations, and augment executive strategy.
               </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
               
               {/* Card 1: SDR */}
               <div className="group border border-white/10 bg-neutral-950/60 backdrop-blur-md p-6 md:p-8 relative overflow-hidden reveal-on-scroll magnetic-card hover:border-blue-500/50 transition-colors duration-500" style={{ ["--reveal-delay" as any]: "90ms" }}>
@@ -683,22 +681,22 @@ export default function LandingPage() {
                 
                 <div className="relative z-10">
                   <div className="flex justify-between items-start mb-6">
-                    <div className="w-10 h-10 border border-white/10 bg-black flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform duration-500 shadow-[0_0_15px_rgba(59,130,246,0.1)] group-hover:shadow-[0_0_20px_rgba(59,130,246,0.3)]">
+                    <div className="w-10 h-10 border border-white/10 bg-black flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform duration-500 shadow-[0_0_15px_rgba(59,130,246,0.1)] group-hover:shadow-[0_0_20px_rgba(59,130,246,0.3)] rounded-none">
                       <Headset className="w-5 h-5" />
                     </div>
-                    <span className="flex items-center gap-1.5 text-xs font-orbitron tracking-[0.2em] text-blue-500 uppercase">
+                    <span className="flex items-center gap-1.5 text-[10px] font-sans font-bold tracking-widest text-blue-500 uppercase">
                       <span className="w-1.5 h-1.5 bg-blue-500 animate-pulse"></span> Active
                     </span>
                   </div>
-                  <p className="text-xs font-mono text-neutral-500 mb-1">[ OUTBOUND / ACQUISITION ]</p>
-                  <h3 className="text-xl md:text-2xl font-normal tracking-tight text-white font-orbitron uppercase mb-3">SDR Unit</h3>
-                  <p className="text-sm text-neutral-400 font-light mb-6 leading-relaxed">
+                  <p className="text-[10px] font-sans font-bold text-neutral-500 mb-1 uppercase tracking-wider">[ Outbound Strategy ]</p>
+                  <h3 className="text-xl md:text-2xl font-normal tracking-tight text-white font-orbitron mb-3">SDR Agent</h3>
+                  <p className="text-sm text-neutral-400 font-light mb-6 leading-relaxed font-sans">
                     Relentless pipeline generation. Autonomous multi-channel outreach, dynamic script adaptation, and real-time lead qualification at infinite scale.
                   </p>
                   
                   <div className="space-y-3 border-t border-white/5 pt-4">
-                    <div className="flex justify-between items-center text-xs font-mono">
-                      <span className="text-neutral-500 uppercase">Volume Cap</span>
+                    <div className="flex justify-between items-center text-[10px] font-sans font-bold">
+                      <span className="text-neutral-500 uppercase tracking-widest">Prospecting Cap</span>
                       <span className="text-blue-400">10k+ / Day</span>
                     </div>
                     <div className="w-full h-1 bg-white/5 relative overflow-hidden">
@@ -715,22 +713,22 @@ export default function LandingPage() {
                 
                 <div className="relative z-10">
                   <div className="flex justify-between items-start mb-6">
-                    <div className="w-10 h-10 border border-white/10 bg-black flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform duration-500 shadow-[0_0_15px_rgba(34,211,238,0.1)] group-hover:shadow-[0_0_20px_rgba(34,211,238,0.3)]">
+                    <div className="w-10 h-10 border border-white/10 bg-black flex items-center justify-center text-cyan-400 group-hover:scale-110 transition-transform duration-500 shadow-[0_0_15px_rgba(34,211,238,0.1)] group-hover:shadow-[0_0_20px_rgba(34,211,238,0.3)] rounded-none">
                       <Terminal className="w-5 h-5" />
                     </div>
-                    <span className="flex items-center gap-1.5 text-xs font-orbitron tracking-[0.2em] text-cyan-500 uppercase">
+                    <span className="flex items-center gap-1.5 text-[10px] font-sans font-bold tracking-widest text-cyan-500 uppercase">
                       <span className="w-1.5 h-1.5 bg-cyan-500 animate-pulse"></span> Active
                     </span>
                   </div>
-                  <p className="text-xs font-mono text-neutral-500 mb-1">[ INTERNAL / OPERATIONS ]</p>
-                  <h3 className="text-xl md:text-2xl font-normal tracking-tight text-white font-orbitron uppercase mb-3">IT Support</h3>
-                  <p className="text-sm text-neutral-400 font-light mb-6 leading-relaxed">
+                  <p className="text-[10px] font-sans font-bold text-neutral-500 mb-1 uppercase tracking-wider">[ Internal Automation ]</p>
+                  <h3 className="text-xl md:text-2xl font-normal tracking-tight text-white font-orbitron mb-3">Support Unit</h3>
+                  <p className="text-sm text-neutral-400 font-light mb-6 leading-relaxed font-sans">
                     Automated triage and resolution. Instantly solves 80% of level-1 tickets, provisions access, and maintains internal knowledge graphs securely.
                   </p>
                   
                   <div className="space-y-3 border-t border-white/5 pt-4">
-                    <div className="flex justify-between items-center text-xs font-mono">
-                      <span className="text-neutral-500 uppercase">Resolution Rate</span>
+                    <div className="flex justify-between items-center text-[10px] font-sans font-bold">
+                      <span className="text-neutral-500 uppercase tracking-widest">Resolution Rate</span>
                       <span className="text-cyan-400">82.4%</span>
                     </div>
                     <div className="w-full h-1 bg-white/5 relative overflow-hidden">
@@ -747,22 +745,22 @@ export default function LandingPage() {
                 
                 <div className="relative z-10">
                   <div className="flex justify-between items-start mb-6">
-                    <div className="w-10 h-10 border border-white/10 bg-black flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform duration-500 shadow-[0_0_15px_rgba(168,85,247,0.1)] group-hover:shadow-[0_0_20px_rgba(168,85,247,0.3)]">
+                    <div className="w-10 h-10 border border-white/10 bg-black flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform duration-500 shadow-[0_0_15px_rgba(168,85,247,0.1)] group-hover:shadow-[0_0_20px_rgba(168,85,247,0.3)] rounded-none">
                       <User className="w-5 h-5" />
                     </div>
-                    <span className="flex items-center gap-1.5 text-xs font-orbitron tracking-[0.2em] text-purple-500 uppercase">
+                    <span className="flex items-center gap-1.5 text-[10px] font-sans font-bold tracking-widest text-purple-500 uppercase">
                       <span className="w-1.5 h-1.5 bg-purple-500 animate-pulse"></span> Active
                     </span>
                   </div>
-                  <p className="text-xs font-mono text-neutral-500 mb-1">[ STRATEGY / EXECUTIVE ]</p>
-                  <h3 className="text-xl md:text-2xl font-normal tracking-tight text-white font-orbitron uppercase mb-3">CEO Co-Pilot</h3>
-                  <p className="text-sm text-neutral-400 font-light mb-6 leading-relaxed">
-                    Strategic synthesis and executive summary. Aggregates cross-departmental data into real-time briefings, surfacing critical anomalies before they escalate.
+                  <p className="text-[10px] font-sans font-bold text-neutral-500 mb-1 uppercase tracking-wider">[ Executive Strategy ]</p>
+                  <h3 className="text-xl md:text-2xl font-normal tracking-tight text-white font-orbitron mb-3">CEO Co-Pilot</h3>
+                  <p className="text-sm text-neutral-400 font-light mb-6 leading-relaxed font-sans">
+                    Strategic synthesis and executive summary. Aggregates cross-departmental data into real-time briefings, surfacing critical anomalies.
                   </p>
                   
                   <div className="space-y-3 border-t border-white/5 pt-4">
-                    <div className="flex justify-between items-center text-xs font-mono">
-                      <span className="text-neutral-500 uppercase">Data Sources</span>
+                    <div className="flex justify-between items-center text-[10px] font-sans font-bold">
+                      <span className="text-neutral-500 uppercase tracking-widest">Data Streams</span>
                       <span className="text-purple-400">14 Active</span>
                     </div>
                     <div className="w-full h-1 bg-white/5 relative overflow-hidden">
@@ -771,8 +769,8 @@ export default function LandingPage() {
                   </div>
                 </div>
               </div>
-
             </div>
+ </div>
           </div>
         </section>
 
@@ -809,7 +807,7 @@ export default function LandingPage() {
 
               {/* Plan 2: Professional (Featured) */}
               <div className="group border-x border-cyan-500/30 bg-neutral-900/40 backdrop-blur-md p-8 md:p-10 flex flex-col justify-between reveal-on-scroll scale-100 md:scale-110 z-20 shadow-[0_0_100px_rgba(6,182,212,0.1)] relative" style={{ ["--reveal-delay" as any]: "100ms" }}>
-                <div className="absolute -top-1 left-1/2 -translate-x-1/2 bg-cyan-500 px-4 py-1 text-[10px] font-orbitron text-black uppercase tracking-[0.2em]">Enforcement Level: High</div>
+                <div className="absolute -top-1 left-1/2 -translate-x-1/2 bg-cyan-600 px-4 py-1 text-[10px] font-sans font-bold text-white uppercase tracking-[0.2em] rounded-b-sm">Recommended for Growth</div>
                 <div>
                   <div className="text-xs font-mono text-cyan-400 uppercase tracking-[0.2em] mb-4">[ Tier 02 ]</div>
                   <h3 className="text-2xl font-normal text-white font-orbitron uppercase mb-2">Power</h3>
@@ -820,7 +818,7 @@ export default function LandingPage() {
                     <li className="flex items-center gap-3 text-sm text-white font-light"><div className="w-1.5 h-1.5 bg-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.8)]"></div> Priority execution</li>
                   </ul>
                 </div>
-                <a href="/home/workflows" className="w-full py-4 text-center bg-cyan-500 text-black font-orbitron text-xs uppercase tracking-[0.2em] hover:bg-cyan-400 shadow-[0_0_30px_rgba(6,182,212,0.4)] transition-all">Authorize Access</a>
+                <a href="/home/workflows" className="w-full py-4 text-center bg-cyan-600 text-white font-sans font-bold text-xs uppercase tracking-[0.2em] hover:bg-cyan-500 shadow-[0_0_30px_rgba(8,145,178,0.4)] transition-all">Select Plan</a>
               </div>
 
               {/* Plan 3: Enterprise */}
@@ -831,12 +829,12 @@ export default function LandingPage() {
                   <h3 className="text-2xl font-normal text-white font-orbitron uppercase mb-2">Corporate</h3>
                   <div className="text-4xl font-normal text-white mb-8">Custom</div>
                   <ul className="space-y-4 mb-12">
-                    <li className="flex items-center gap-3 text-sm text-neutral-400 font-light"><div className="w-1 h-1 bg-cyan-500"></div> Dedicated node clusters</li>
-                    <li className="flex items-center gap-3 text-sm text-neutral-400 font-light"><div className="w-1 h-1 bg-cyan-500"></div> SOC2 & InfoSec compliance</li>
-                    <li className="flex items-center gap-3 text-sm text-neutral-400 font-light"><div className="w-1 h-1 bg-cyan-500"></div> 24/7 technical escort</li>
+                    <li className="flex items-center gap-3 text-sm text-neutral-400 font-light font-sans"><div className="w-1 h-1 bg-cyan-500"></div> Dedicated node clusters</li>
+                    <li className="flex items-center gap-3 text-sm text-neutral-400 font-light font-sans"><div className="w-1 h-1 bg-cyan-500"></div> SOC2 & InfoSec compliance</li>
+                    <li className="flex items-center gap-3 text-sm text-neutral-400 font-light font-sans"><div className="w-1 h-1 bg-cyan-500"></div> 24/7 priority support</li>
                   </ul>
                 </div>
-                <a href="mailto:hello@axonix.ai" className="w-full py-4 text-center border border-white/10 text-white font-orbitron text-xs uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-all">Inquire Within</a>
+                <a href="mailto:hello@axonix.ai" className="w-full py-4 text-center border border-white/10 text-white font-sans font-bold text-xs uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-all">Contact Us</a>
               </div>
             </div>
           </div>

@@ -55,20 +55,20 @@ export default function ForgotPasswordPage() {
 
       <div className="mb-10 text-center">
         <ShieldAlert className="w-12 h-12 text-yellow-500 mx-auto mb-4 opacity-80" />
-        <h1 className="text-2xl font-normal tracking-tight text-white font-orbitron uppercase mb-2">
-          Override_Auth
+        <h1 className="text-2xl font-normal tracking-tight text-white font-orbitron mb-2">
+          Reset Password
         </h1>
-        <p className="text-sm font-mono text-neutral-400 leading-relaxed">
-          {submitted ? "Protocol broadcasted. Check secure comms." : "Initiate emergency password bypass protocol."}
+        <p className="text-sm font-sans text-neutral-400 leading-relaxed">
+          {submitted ? "Recovery link sent. Check your inbox." : "Enter your email address to receive a password reset link."}
         </p>
       </div>
 
       {!submitted ? (
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2 relative">
-            <label className="text-[10px] font-orbitron uppercase tracking-[0.2em] text-neutral-500 flex items-center justify-between">
-              <span>Target_Identity</span>
-              <span className="text-cyan-500/50">Required</span>
+            <label className="text-[11px] font-sans font-medium uppercase tracking-wider text-neutral-500 flex items-center justify-between">
+              <span>Email Address</span>
+              <span className="text-cyan-500/50 text-[10px]">Required</span>
             </label>
             <div className="relative group/input">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-500 group-focus-within/input:text-cyan-400 transition-colors" />
@@ -77,8 +77,8 @@ export default function ForgotPasswordPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full bg-black/50 border border-white/10 focus:border-cyan-500/50 outline-none px-10 py-3 text-sm text-white font-mono placeholder:text-neutral-700 transition-all focus:shadow-[0_0_20px_rgba(34,211,238,0.1)]"
-                placeholder="operator@axonix.net"
+                className="w-full bg-black/50 border border-white/10 focus:border-cyan-500/50 outline-none px-10 py-3 text-sm text-white font-sans placeholder:text-neutral-700 transition-all focus:shadow-[0_0_20px_rgba(34,211,238,0.1)]"
+                placeholder="email@example.com"
               />
             </div>
           </div>
@@ -86,30 +86,30 @@ export default function ForgotPasswordPage() {
           <button
             type="submit"
             disabled={loading}
-            className="group/btn relative w-full border border-yellow-500/30 bg-yellow-500/10 px-6 py-4 text-[11px] font-orbitron text-yellow-500 uppercase tracking-[0.3em] overflow-hidden transition-all hover:bg-yellow-500 hover:text-black hover:shadow-[0_0_30px_rgba(234,179,8,0.4)] disabled:opacity-50 disabled:pointer-events-none"
+            className="group/btn relative w-full border border-yellow-500/30 bg-yellow-500/10 px-6 py-4 text-[11px] font-orbitron text-yellow-500 uppercase tracking-[0.2em] overflow-hidden transition-all hover:bg-yellow-500 hover:text-black hover:shadow-[0_0_30_rgba(234,179,8,0.4)] disabled:opacity-50 disabled:pointer-events-none"
           >
             {loading ? (
               <span className="flex items-center justify-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                TRANSMITTING...
+                SENDING...
               </span>
             ) : (
-              <span className="relative z-10 flex items-center justify-center gap-2">
-                Broadcast Override
+              <span className="relative z-10 flex items-center justify-center gap-2 font-sans font-semibold text-sm">
+                Send Reset Link
               </span>
             )}
           </button>
         </form>
       ) : (
         <div className="bg-yellow-500/10 border border-yellow-500/20 p-6 text-center">
-          <p className="text-sm font-mono text-yellow-400 mb-4">
-            Recovery instructions transmitted to {email}. Follow the secure link to complete the override.
+          <p className="text-sm font-sans text-yellow-400 mb-4">
+            Recovery instructions sent to {email}. Please follow the link in your email to reset your password.
           </p>
           <Link
             href="/sign-in"
-            className="inline-block border border-white/10 bg-black px-6 py-3 text-[10px] font-orbitron text-white uppercase tracking-widest hover:border-white/30 hover:bg-white/5 transition-all"
+            className="inline-block border border-white/10 bg-black px-6 py-3 text-[10px] font-sans font-medium text-white uppercase tracking-widest hover:border-white/30 hover:bg-white/5 transition-all text-sm"
           >
-            Abort Protocol
+            Back to Sign In
           </Link>
         </div>
       )}

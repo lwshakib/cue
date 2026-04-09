@@ -48,23 +48,23 @@ export default function SignInPage() {
 
       <div className="flex flex-col gap-6">
         <div className="text-center">
-          <p className="font-orbitron text-[10px] md:text-xs uppercase tracking-[0.4em] text-cyan-500 mb-2">Auth Sequence</p>
-          <h1 className="text-2xl md:text-3xl font-normal tracking-tight text-white font-orbitron uppercase">Init_Gateway</h1>
+          <p className="text-[10px] md:text-xs uppercase tracking-[0.3em] text-cyan-500 mb-2">Secure Authentication</p>
+          <h1 className="text-2xl md:text-3xl font-normal tracking-tight text-white font-orbitron">Sign In</h1>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           {/* Email Field */}
           <div className="space-y-2">
-            <label htmlFor="email" className="font-orbitron font-light text-[10px] uppercase tracking-widest text-neutral-500">Node Identifier [ EMAIL ]</label>
+            <label htmlFor="email" className="text-[11px] font-sans font-medium uppercase tracking-wider text-neutral-400">Email Address</label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-500/50" />
               <input
                 id="email"
                 type="email"
-                placeholder="identity@axonix.ai"
+                placeholder="email@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-black border border-white/10 px-10 py-3 text-sm font-light text-white transition-all duration-300 focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/30 rounded-none placeholder:text-neutral-700 font-mono disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-black border border-white/10 px-10 py-3 text-sm font-light text-white transition-all duration-300 focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/30 rounded-none placeholder:text-neutral-700 font-sans disabled:opacity-50 disabled:cursor-not-allowed"
                 required
                 disabled={loading}
               />
@@ -74,8 +74,8 @@ export default function SignInPage() {
           {/* Password Field */}
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <label htmlFor="password" className="font-orbitron font-light text-[10px] uppercase tracking-widest text-neutral-500">Secure Protocol [ PWD ]</label>
-              <Link href="#" className="font-orbitron text-[10px] uppercase tracking-widest text-neutral-500 hover:text-cyan-500 transition-colors">Recover</Link>
+              <label htmlFor="password" className="text-[11px] font-sans font-medium uppercase tracking-wider text-neutral-400">Password</label>
+              <Link href="#" className="text-[10px] font-sans font-medium uppercase tracking-widest text-neutral-500 hover:text-cyan-500 transition-colors">Forgot password?</Link>
             </div>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-cyan-500/50" />
@@ -85,7 +85,7 @@ export default function SignInPage() {
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-black border border-white/10 px-10 py-3 text-sm font-light text-white transition-all duration-300 focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/30 rounded-none placeholder:text-neutral-700 font-mono disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-black border border-white/10 px-10 py-3 text-sm font-light text-white transition-all duration-300 focus:border-cyan-500/50 focus:outline-none focus:ring-1 focus:ring-cyan-500/30 rounded-none placeholder:text-neutral-700 font-sans disabled:opacity-50 disabled:cursor-not-allowed"
                 required
                 disabled={loading}
               />
@@ -102,18 +102,18 @@ export default function SignInPage() {
               />
               <div className="absolute inset-0 bg-cyan-500 transform scale-0 peer-checked:scale-100 transition-transform duration-200"></div>
             </div>
-            <span className="font-orbitron font-light text-[10px] uppercase tracking-widest text-neutral-500">Maintain Link State</span>
+            <span className="text-[11px] font-sans font-medium text-neutral-400 uppercase tracking-wider">Remember me</span>
           </div>
 
           {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
-            className="group relative w-full border border-cyan-400 bg-cyan-400/10 text-cyan-400 font-orbitron font-normal text-xs uppercase tracking-[0.3em] py-4 transition-all duration-300 overflow-hidden rounded-none disabled:opacity-50 disabled:cursor-not-allowed"
+            className="group relative w-full border border-cyan-400 bg-cyan-400/10 text-cyan-400 font-orbitron font-normal text-xs uppercase tracking-[0.2em] py-4 transition-all duration-300 overflow-hidden rounded-none disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <div className="absolute inset-0 w-full h-full bg-cyan-400 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-0"></div>
-            <span className="relative z-10 flex items-center justify-center gap-3 group-hover:text-black transition-colors duration-300">
-              {loading ? "Processing..." : "Init_Sequence"} <ArrowRight className="w-4 h-4" />
+            <span className="relative z-10 flex items-center justify-center gap-3 group-hover:text-black transition-colors duration-300 text-sm font-sans font-semibold">
+              {loading ? "Signing in..." : "Sign In"} <ArrowRight className="w-4 h-4" />
             </span>
           </button>
         </form>
@@ -121,7 +121,7 @@ export default function SignInPage() {
         <div className="flex flex-col gap-4 mt-2">
           <div className="flex items-center gap-3">
             <div className="h-[1px] flex-1 bg-white/5"></div>
-            <span className="font-orbitron text-[8px] uppercase tracking-widest text-neutral-600">Secondary Identifiers</span>
+            <span className="text-[9px] font-sans font-medium uppercase tracking-[0.2em] text-neutral-600">Or continue with</span>
             <div className="h-[1px] flex-1 bg-white/5"></div>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -133,9 +133,9 @@ export default function SignInPage() {
                  });
                }}
                disabled={loading}
-               className="border border-white/10 bg-black py-3 text-[10px] font-orbitron text-neutral-400 uppercase tracking-widest hover:border-white/30 hover:bg-white/5 transition-all text-center disabled:opacity-50 disabled:cursor-not-allowed"
+               className="border border-white/10 bg-black py-3 text-[10px] font-sans font-medium text-neutral-400 uppercase tracking-widest hover:border-white/30 hover:bg-white/5 transition-all text-center disabled:opacity-50 disabled:cursor-not-allowed"
              >
-               Google_Link
+               Google
              </button>
              <button 
                onClick={async () => {
@@ -145,15 +145,15 @@ export default function SignInPage() {
                  });
                }}
                disabled={loading}
-               className="border border-white/10 bg-black py-3 text-[10px] font-orbitron text-neutral-400 uppercase tracking-widest hover:border-white/30 hover:bg-white/5 transition-all text-center disabled:opacity-50 disabled:cursor-not-allowed"
+               className="border border-white/10 bg-black py-3 text-[10px] font-sans font-medium text-neutral-400 uppercase tracking-widest hover:border-white/30 hover:bg-white/5 transition-all text-center disabled:opacity-50 disabled:cursor-not-allowed"
              >
-               GitHub_Link
+               GitHub
              </button>
           </div>
         </div>
 
-        <p className="font-orbitron font-light text-[10px] uppercase tracking-widest text-neutral-500 text-center mt-4">
-          Unregistered node? <Link href="/sign-up" className="text-cyan-500 hover:underline">Register Identity</Link>
+        <p className="text-[11px] font-sans font-medium text-neutral-500 text-center mt-4">
+          New to Axonix? <Link href="/sign-up" className="text-cyan-500 hover:text-cyan-400 transition-colors">Create account</Link>
         </p>
       </div>
 
