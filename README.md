@@ -1,159 +1,101 @@
-# Turborepo starter
+# Axonix 🚀
 
-This Turborepo starter is maintained by the Turborepo core team.
+Axonix is a high-performance, **Agentic Workflow Automation** platform designed to streamline complex business processes through a visual, node-based automation engine. Built on a modern Turborepo monorepo architecture, Axonix provides a seamless experience from design to execution.
 
-## Using this example
+Developed by **[lwshakib](https://github.com/lwshakib)**.
 
-Run the following command:
+---
 
+## 🏗️ Architecture Overview
+
+Axonix is organized as a monorepo, ensuring high modularity and shared logic across the entire ecosystem.
+
+### 📱 Applications
+- **[web](file:///d:/axonix/apps/web)**: The primary frontend built with Next.js (App Router). Features a visual workflow builder, authentication dashboards, and real-time execution monitoring.
+- **[server](file:///d:/axonix/apps/server)**: The core backend engine using Node.js/Express. It handles authentication, data persistence (Postgres), and the workflow execution sequence.
+- **[docs](file:///d:/axonix/apps/docs)**: Documentation portal built with Next.js to provide guides and API references.
+
+### 📦 Shared Packages
+- **[ui](file:///d:/axonix/packages/ui)**: A comprehensive, React-based UI component library powered by TailwindCSS and Radix UI.
+- **[typescript-config](file:///d:/axonix/packages/typescript-config)**: Standardized TypeScript configurations used across all projects.
+- **[eslint-config](file:///d:/axonix/packages/eslint-config)**: Shared linting rules to maintain code quality.
+
+---
+
+## ⚙️ Tech Stack
+
+- **Core**: Turborepo, pnpm
+- **Frontend**: Next.js, TypeScript, TailwindCSS, @xyflow/react
+- **Backend**: Node.js, Express, Passport.js, Winston (Logging)
+- **Database**: PostgreSQL (Neon)
+- **Email/Storage**: Resend, Cloudflare R2 (S3 compatible)
+
+---
+
+## 🚀 Getting Started
+
+Follow these steps to set up the Axonix ecosystem locally.
+
+### 1. Prerequisites
+Ensure you have the following installed:
+- [Node.js](https://nodejs.org/) (Version 18 or higher)
+- [pnpm](https://pnpm.io/) (Version 9 or higher)
+
+### 2. Installation
+Clone the repository and install dependencies from the root directory:
 ```sh
-npx create-turbo@latest
+pnpm install
 ```
 
-## What's inside?
+### 3. Environment Configuration
+You need to set up environment variables for both the frontend and the backend.
 
-This Turborepo includes the following packages/apps:
-
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
+#### **Backend Setup**
+Copy the example file in the `server` directory and fill in your credentials:
 ```sh
-cd my-turborepo
-turbo build
+cp apps/server/.env.example apps/server/.env
+```
+Key configurations include `DATABASE_URL`, `GOOGLE_CLIENT_ID`, `GITHUB_CLIENT_ID`, and `RESEND_API_KEY`.
+
+#### **Frontend Setup**
+Copy the example file in the `web` directory:
+```sh
+cp apps/web/.env.example apps/web/.env
+```
+Ensure `NEXT_PUBLIC_API_URL` points to your running backend (default: `http://localhost:8080/api/v1`).
+
+### 4. Running the Project
+Start the development server for all applications and packages simultaneously:
+```sh
+pnpm run dev
+```
+Alternatively, build the production bundles:
+```sh
+pnpm run build
 ```
 
-Without global `turbo`, use your package manager:
+---
 
-```sh
-cd my-turborepo
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
-```
+## 🔥 Key Features
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+- **Visual Workflow Builder**: Intuitive node-based editor for designing complex logic.
+- **SSE Real-time Streaming**: Monitor workflow execution status live via Server-Sent Events.
+- **Dynamic Interpolation**: Pass data between workflow steps using `{{ $json.key }}` syntax.
+- **Multi-tenant Auth**: Secure Google and GitHub OAuth integration.
+- **Shared UI Logic**: Consistent design system shared between documentation and the main application.
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+---
 
-```sh
-turbo build --filter=docs
-```
+## 🛠️ Commands
 
-Without global `turbo`:
+- `pnpm run build` - Build all apps and packages.
+- `pnpm run dev` - Start development servers with hot-reloading.
+- `pnpm run lint` - Lint all packages.
+- `pnpm run format` - Format the entire codebase using Prettier.
+- `pnpm run check-types` - Perform static type checks in all packages.
 
-```sh
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
+---
 
-### Develop
+## 📄 License
 
-To develop all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+Maintained by **lwshakib**. 
