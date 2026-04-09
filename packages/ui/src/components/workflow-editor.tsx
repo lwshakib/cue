@@ -41,6 +41,7 @@ import {
   PlayIcon,
   PlusIcon,
   PowerIcon,
+  Loader2Icon,
   SearchIcon,
   Settings2Icon,
   SparklesIcon,
@@ -109,6 +110,15 @@ function NodeConfigIndicator({
   configured: boolean;
   runStatus: NodeRunStatus;
 }) {
+  if (runStatus === "loading") {
+    return (
+      <Loader2Icon
+        className="pointer-events-none absolute bottom-2 right-2 z-30 h-4 w-4 animate-spin text-[#2a43e9]"
+        aria-hidden="true"
+      />
+    );
+  }
+
   if (runStatus === "success") {
     return (
       <CheckCircle2Icon
@@ -441,7 +451,14 @@ function NodeStatusBorder({
     );
   }
 
-  if (status === "success") return null;
+  if (status === "success") {
+    return (
+      <>
+        <div className="pointer-events-none absolute -top-1.5 -left-1.5 -z-10 h-[calc(100%+12px)] w-[calc(100%+12px)] rounded-[30px] bg-[#161616]" />
+        <div className="pointer-events-none absolute -top-1.5 -left-1.5 -z-10 h-[calc(100%+12px)] w-[calc(100%+12px)] rounded-[30px] border-[3px] border-emerald-600/60" />
+      </>
+    );
+  }
 
   return (
     <>
@@ -1773,41 +1790,6 @@ export function WorkflowEditor({
                   <p className="text-xs text-muted-foreground">
                     Last executed at {lastExecutedAt}
                   </p>
-                )}
-                {executionStatuses.length > 0 && (
-                  <div className="max-h-48 w-[420px] overflow-y-auto rounded-md border border-border bg-background/95 p-2">
-                    <div className="space-y-1">
-                      {executionStatuses.map((item, index) => (
-                        <div
-                          key={`${item.nodeId}-${index}`}
-                          className="flex items-center justify-between rounded px-2 py-1 text-xs"
-                        >
-                          <div className="min-w-0">
-                            <p className="truncate font-medium text-foreground">{item.label}</p>
-                            {item.message && (
-                              <p className="truncate text-muted-foreground">
-                                {item.message}
-                                {typeof item.statusCode === "number" ? ` (${item.statusCode})` : ""}
-                              </p>
-                            )}
-                          </div>
-                          <span
-                            className={
-                              item.status === "success"
-                                ? "text-emerald-500"
-                                : item.status === "error"
-                                  ? "text-red-500"
-                                  : item.status === "running"
-                                    ? "text-amber-500"
-                                    : "text-muted-foreground"
-                            }
-                          >
-                            {item.status}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
                 )}
               </div>
             </Panel>
