@@ -13,7 +13,7 @@ export default function DataTablesPage() {
         <h3 className="font-semibold text-sm">No data tables found</h3>
         <p className="text-xs text-muted-foreground mt-1">Create structured data tables for your automated processes</p>
       </div>
-      <Button variant="outline" className="h-9 px-4 gap-2 text-xs border-red-600/30 hover:border-red-600 transition-colors">
+      <Button variant="outline" className="h-9 px-4 gap-2 text-xs border-border hover:border-primary/50 transition-colors">
         <Plus className="size-3.5" />
         Create table
       </Button>

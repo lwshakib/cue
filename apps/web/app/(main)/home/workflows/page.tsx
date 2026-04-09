@@ -7,8 +7,6 @@ import {
   Filter, 
   MoreVertical, 
   User,
-  ChevronLeft,
-  ChevronRight
 } from "lucide-react"
 
 import { Input } from "@repo/ui/components/ui/input"
@@ -22,13 +20,11 @@ import {
 import { Button } from "@repo/ui/components/ui/button"
 import { Badge } from "@repo/ui/components/ui/badge"
 import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@repo/ui/components/ui/pagination"
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@repo/ui/components/ui/dropdown-menu"
 
 type WorkflowItem = {
   id: string
@@ -56,14 +52,16 @@ const formatDate = (value: string) => {
 
 export default function WorkflowsPage() {
   const router = useRouter()
-  const [workflows, setWorkflows] = React.useState<WorkflowItem[]>([])
+  const [allWorkflows, setAllWorkflows] = React.useState<WorkflowItem[]>([])
+  const [visibleCount, setVisibleCount] = React.useState(20)
   const [isLoading, setIsLoading] = React.useState(true)
+  const sentinelRef = React.useRef<HTMLDivElement | null>(null)
 
   React.useEffect(() => {
     const run = async () => {
       const token = getSessionToken()
       if (!token) {
-        setWorkflows([])
+        setAllWorkflows([])
         setIsLoading(false)
         return
       }
@@ -80,10 +78,11 @@ export default function WorkflowsPage() {
         }
 
         const payload = await response.json()
-        setWorkflows(payload.workflows ?? [])
+        setAllWorkflows(payload.workflows ?? [])
+        setVisibleCount(20)
       } catch (error) {
         console.error("[WorkflowsPage] Failed to load workflows:", error)
-        setWorkflows([])
+        setAllWorkflows([])
       } finally {
         setIsLoading(false)
       }
@@ -91,6 +90,97 @@ export default function WorkflowsPage() {
 
     void run()
   }, [])
+
+  React.useEffect(() => {
+    const onWorkflowCreated = (event: Event) => {
+      const customEvent = event as CustomEvent<WorkflowItem>
+      const workflow = customEvent.detail
+      if (!workflow?.id) return
+
+      setAllWorkflows((current) => {
+        const exists = current.some((item) => item.id === workflow.id)
+        if (exists) return current
+        return [workflow, ...current]
+      })
+      setVisibleCount((prev) => Math.max(prev, 20))
+    }
+
+    window.addEventListener("workflow:created", onWorkflowCreated as EventListener)
+    return () => window.removeEventListener("workflow:created", onWorkflowCreated as EventListener)
+  }, [])
+
+  React.useEffect(() => {
+    const node = sentinelRef.current
+    if (!node) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const first = entries[0]
+        if (!first?.isIntersecting) return
+        setVisibleCount((prev) => Math.min(prev + 20, allWorkflows.length))
+      },
+      { rootMargin: "200px 0px" }
+    )
+
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [allWorkflows.length])
+
+  const workflows = React.useMemo(
+    () => allWorkflows.slice(0, visibleCount),
+    [allWorkflows, visibleCount]
+  )
+
+  const duplicateWorkflow = async (workflow: WorkflowItem) => {
+    const token = getSessionToken()
+    if (!token) return
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/workflow`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ name: `${workflow.name} Copy` }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to duplicate workflow")
+      }
+
+      const payload = await response.json()
+      const created = payload?.workflow as WorkflowItem | undefined
+      if (!created?.id) return
+
+      setAllWorkflows((current) => [created, ...current])
+      setVisibleCount((prev) => Math.max(prev, 20))
+    } catch (error) {
+      console.error("[WorkflowsPage] Failed to duplicate workflow:", error)
+    }
+  }
+
+  const deleteWorkflow = async (workflow: WorkflowItem) => {
+    const token = getSessionToken()
+    if (!token) return
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/workflow/${workflow.id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to delete workflow")
+      }
+
+      setAllWorkflows((current) => current.filter((item) => item.id !== workflow.id))
+    } catch (error) {
+      console.error("[WorkflowsPage] Failed to delete workflow:", error)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -123,7 +213,7 @@ export default function WorkflowsPage() {
         {isLoading && (
           <div className="text-sm text-muted-foreground">Loading workflows...</div>
         )}
-        {!isLoading && workflows.length === 0 && (
+        {!isLoading && allWorkflows.length === 0 && (
           <div className="text-sm text-muted-foreground">No workflows yet. Click Create workflow.</div>
         )}
         {workflows.map((wf) => (
@@ -143,60 +233,56 @@ export default function WorkflowsPage() {
                 <User className="size-3" />
                 <span className="text-[11px] font-medium">Personal</span>
               </Badge>
-              <Button variant="ghost" size="icon" className="size-8 text-muted-foreground hover:text-foreground">
-                <MoreVertical className="size-4" />
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8 text-muted-foreground hover:text-foreground"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <MoreVertical className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      router.push(`/workflow/${wf.id}`)
+                    }}
+                  >
+                    Open
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      void duplicateWorkflow(wf)
+                    }}
+                  >
+                    Duplicate
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="text-destructive focus:text-destructive"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      void deleteWorkflow(wf)
+                    }}
+                  >
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Pagination Footer */}
-      <div className="flex items-center justify-end gap-6 pt-6 text-sm text-muted-foreground">
-        <p className="text-xs">Total {workflows.length}</p>
-        <Pagination className="w-auto mx-0">
-          <PaginationContent className="gap-1">
-            <PaginationItem>
-              <PaginationLink 
-                href="#"
-                aria-label="Go to previous page"
-                className="h-8 w-8 p-0 border-muted-foreground/10 hover:bg-muted/10"
-              >
-                <ChevronLeft className="size-4" />
-              </PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationLink 
-                href="#" 
-                isActive 
-                className="h-8 w-8 p-0 border-primary bg-primary text-primary-foreground font-bold hover:bg-primary/90 hover:text-primary-foreground"
-              >
-                1
-              </PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationLink 
-                href="#"
-                aria-label="Go to next page"
-                className="h-8 w-8 p-0 border-muted-foreground/10 hover:bg-muted/10"
-              >
-                <ChevronRight className="size-4" />
-              </PaginationLink>
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-        
-        <Select defaultValue="50">
-          <SelectTrigger className="w-[100px] h-8 bg-muted/5 border-muted-foreground/10 text-xs text-muted-foreground">
-            <SelectValue placeholder="Page size" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="10">10/page</SelectItem>
-            <SelectItem value="20">20/page</SelectItem>
-            <SelectItem value="50">50/page</SelectItem>
-            <SelectItem value="100">100/page</SelectItem>
-          </SelectContent>
-        </Select>
+      {/* Infinite Scroll Footer */}
+      <div className="pt-6 text-sm text-muted-foreground">
+        <div ref={sentinelRef} className="h-2 w-full" />
+        {!isLoading && workflows.length < allWorkflows.length && (
+          <p className="mt-2 text-xs text-muted-foreground">Scroll to load more...</p>
+        )}
       </div>
     </div>
   )

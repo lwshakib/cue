@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { ChevronDown, Plus } from "lucide-react"
 
 import { Button } from "@repo/ui/components/ui/button"
@@ -29,6 +29,7 @@ const getSessionToken = () => {
 
 export function DashboardHeader() {
   const pathname = usePathname()
+  const router = useRouter()
   const [isCreating, setIsCreating] = React.useState(false)
   
   // Find current action based on path
@@ -55,8 +56,21 @@ export function DashboardHeader() {
         throw new Error("Create workflow failed")
       }
 
-      if (typeof window !== "undefined") {
-        window.location.href = "/home/workflows"
+      const payload = await response.json()
+
+      if (typeof window !== "undefined" && payload?.workflow) {
+        window.dispatchEvent(
+          new CustomEvent("workflow:created", {
+            detail: payload.workflow,
+          })
+        )
+      }
+
+      const createdWorkflowId = payload?.workflow?.id as string | undefined
+      if (createdWorkflowId) {
+        router.push(`/workflow/${createdWorkflowId}`)
+      } else if (!pathname.includes("/home/workflows")) {
+        router.push("/home/workflows")
       }
     } catch (error) {
       console.error("[DashboardHeader] Failed to create workflow:", error)

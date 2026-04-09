@@ -33,3 +33,23 @@ export const listWorkflows = async (req: any, res: Response) => {
     res.status(500).json({ success: false, message: "Failed to load workflows." });
   }
 };
+
+export const deleteWorkflow = async (req: any, res: Response) => {
+  const userId = req.user.id;
+  const workflowId = req.params.id;
+
+  try {
+    const deleted = await postgresService.deleteWorkflowForUser(workflowId, userId);
+    if (!deleted) {
+      return res.status(404).json({ success: false, message: "Workflow not found." });
+    }
+
+    res.json({
+      success: true,
+      message: "Workflow deleted successfully.",
+    });
+  } catch (error: any) {
+    logger.error(`[WorkflowController] Delete workflow failed: ${error.message}`);
+    res.status(500).json({ success: false, message: "Failed to delete workflow." });
+  }
+};

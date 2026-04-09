@@ -210,9 +210,13 @@ export class PostgresService {
     return rows;
   }
 
-  public async deleteWorkflow(id: string) {
-    await this.pool.query('DELETE FROM workflow WHERE id = $1', [id]);
-    logger.info(`[PostgresService] Deleted Workflow: ${id}`);
+  public async deleteWorkflowForUser(id: string, userId: string) {
+    const result = await this.pool.query(
+      'DELETE FROM workflow WHERE id = $1 AND "userId" = $2',
+      [id, userId]
+    );
+    logger.info(`[PostgresService] Deleted Workflow: ${id} for user ${userId}`);
+    return (result.rowCount ?? 0) > 0;
   }
 }
 
