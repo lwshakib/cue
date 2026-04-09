@@ -28,13 +28,19 @@ import "@xyflow/react/dist/style.css";
 import { useTheme } from "next-themes";
 import {
   CalendarClockIcon,
+  CheckCircle2Icon,
+  ChevronDownIcon,
+  ChevronRightIcon,
   EllipsisIcon,
   ExternalLinkIcon,
   GlobeIcon,
+  InfoIcon,
   MousePointerIcon,
+  PencilIcon,
   PlayIcon,
   PlusIcon,
   PowerIcon,
+  SearchIcon,
   Settings2Icon,
   SparklesIcon,
   Trash2Icon,
@@ -52,6 +58,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 
 type WorkflowEditorProps = {
   initialNodes?: Node[];
@@ -64,6 +71,7 @@ type WorkflowEditorProps = {
     status: "running" | "success" | "error" | "skipped";
     message?: string;
     statusCode?: number;
+    output?: string;
   }) => void) => Promise<{
     statuses: Array<{
       nodeId: string;
@@ -71,6 +79,7 @@ type WorkflowEditorProps = {
       status: "running" | "success" | "error" | "skipped";
       message?: string;
       statusCode?: number;
+      output?: string;
     }>;
   } | null>;
 };
@@ -84,6 +93,320 @@ type WorkflowNodeData = {
 };
 
 type NodeRunStatus = "initial" | "loading" | "success" | "error";
+
+const getJsonType = (value: unknown): string => {
+  if (value === null) return "null";
+  if (Array.isArray(value)) return "array";
+  return typeof value;
+};
+
+const formatCellValue = (value: unknown): string => {
+  if (value === null) return "null";
+  if (value === undefined) return "";
+  if (typeof value === "string") return value;
+  if (typeof value === "number" || typeof value === "boolean") return String(value);
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return "[unserializable]";
+  }
+};
+
+const schemaTypeBadge = (value: unknown) => {
+  const type = getJsonType(value);
+  if (type === "object" || type === "array") {
+    return (
+      <span className="inline-flex h-5 w-5 items-center justify-center rounded border border-border bg-background text-[10px] text-muted-foreground">
+        <GlobeIcon className="h-3 w-3" />
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex h-5 w-5 items-center justify-center rounded border border-border bg-background text-[10px] font-medium text-muted-foreground">
+      T
+    </span>
+  );
+};
+
+function SchemaTreeNode({
+  field,
+  value,
+  depth = 0,
+}: {
+  field: string;
+  value: unknown;
+  depth?: number;
+}) {
+  const type = getJsonType(value);
+  const isExpandable =
+    type === "object" ? Object.keys((value ?? {}) as Record<string, unknown>).length > 0
+    : type === "array" ? (value as unknown[]).length > 0
+    : false;
+  const [expanded, setExpanded] = React.useState(true);
+
+  const valueText =
+    type === "object"
+      ? ""
+      : type === "array"
+        ? `${(value as unknown[]).length} item(s)`
+        : formatCellValue(value);
+
+  const children: Array<[string, unknown]> =
+    type === "object"
+      ? Object.entries((value ?? {}) as Record<string, unknown>)
+      : type === "array"
+        ? (value as unknown[]).map((item, index) => [`[${index}]`, item] as [string, unknown])
+        : [];
+
+  return (
+    <div>
+      <div
+        className="flex min-h-8 items-center justify-between px-2 py-1 text-sm hover:bg-muted/20"
+        style={{ paddingLeft: `${depth * 18 + 6}px` }}
+      >
+        <div className="flex min-w-0 items-center gap-2">
+          {isExpandable ? (
+            <button
+              type="button"
+              onClick={() => setExpanded((current) => !current)}
+              className="inline-flex h-4 w-4 items-center justify-center text-muted-foreground hover:text-foreground"
+            >
+              {expanded ? <ChevronDownIcon className="h-3.5 w-3.5" /> : <ChevronRightIcon className="h-3.5 w-3.5" />}
+            </button>
+          ) : (
+            <span className="inline-block h-4 w-4" />
+          )}
+          {schemaTypeBadge(value)}
+          <span className="text-sm font-medium text-foreground">{field}</span>
+        </div>
+        <span className="ml-4 max-w-[55%] truncate text-sm text-muted-foreground">{valueText}</span>
+      </div>
+
+      {isExpandable && expanded && (
+        <div>
+          {children.map(([childField, childValue]) => (
+            <SchemaTreeNode
+              key={`${field}-${childField}-${depth}`}
+              field={childField}
+              value={childValue}
+              depth={depth + 1}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function OutputSchemaTab({
+  parsedOutput,
+}: {
+  parsedOutput: unknown | null;
+}) {
+  if (parsedOutput === null) {
+    return (
+      <div className="rounded-md border border-border bg-card p-3 text-xs text-muted-foreground">
+        Output is not valid JSON yet. Run the workflow to view schema.
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full overflow-auto rounded-md bg-background/40 py-1">
+      <SchemaTreeNode
+        field={Array.isArray(parsedOutput) ? "[0]" : "root"}
+        value={Array.isArray(parsedOutput) ? parsedOutput[0] ?? {} : parsedOutput}
+      />
+    </div>
+  );
+}
+
+function OutputTableTab({ parsedOutput }: { parsedOutput: unknown | null }) {
+  if (parsedOutput === null) {
+    return (
+      <div className="rounded-md border border-border bg-card p-3 text-xs text-muted-foreground">
+        Output is not valid JSON yet. Run the workflow to view table data.
+      </div>
+    );
+  }
+
+  const rows = Array.isArray(parsedOutput)
+    ? parsedOutput
+    : getJsonType(parsedOutput) === "object"
+      ? [parsedOutput]
+      : [{ value: parsedOutput }];
+
+  const objectRows = rows.map((row) =>
+    getJsonType(row) === "object" ? (row as Record<string, unknown>) : ({ value: row } as Record<string, unknown>)
+  );
+
+  const columns = Array.from(
+    objectRows.reduce((keys, row) => {
+      Object.keys(row).forEach((key) => keys.add(key));
+      return keys;
+    }, new Set<string>())
+  );
+
+  return (
+    <div className="h-full overflow-auto rounded-md bg-background/40">
+      <table className="min-w-full border-collapse text-xs">
+        <thead className="sticky top-0 bg-muted/30">
+          <tr>
+            {columns.map((column) => (
+              <th key={column} className="border-b border-r border-border px-3 py-2 text-left font-semibold text-foreground">
+                {column}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {objectRows.map((row, index) => (
+            <tr key={`output-row-${index}`} className="align-top">
+              {columns.map((column) => (
+                <td key={`${index}-${column}`} className="border-b border-r border-border px-3 py-2 text-muted-foreground">
+                  <div className="max-w-[300px] break-words">{formatCellValue(row[column])}</div>
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+const getOutputItemCount = (parsedOutput: unknown | null): number => {
+  if (parsedOutput === null) return 0;
+  if (Array.isArray(parsedOutput)) return parsedOutput.length;
+  if (getJsonType(parsedOutput) === "object") {
+    return Object.keys(parsedOutput as Record<string, unknown>).length;
+  }
+  return 1;
+};
+
+function OutputTabsPanel({
+  parsedOutput,
+  prettyJsonOutput,
+}: {
+  parsedOutput: unknown | null;
+  prettyJsonOutput: string;
+}) {
+  const [activeTab, setActiveTab] = React.useState("schema");
+  const itemCount = getOutputItemCount(parsedOutput);
+
+  return (
+    <Tabs
+      value={activeTab}
+      onValueChange={setActiveTab}
+      className="h-full min-w-0 overflow-hidden rounded-md border border-border bg-card"
+    >
+      <div className="flex min-w-0 items-center justify-between border-b border-border px-2 py-1.5">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold tracking-[0.18em] text-foreground/80">OUTPUT</span>
+          <CheckCircle2Icon className="h-4 w-4 text-emerald-500" />
+          <InfoIcon className="h-3.5 w-3.5 text-muted-foreground" />
+        </div>
+        <div className="flex min-w-0 items-center gap-2 overflow-x-auto">
+          <button
+            type="button"
+            aria-label="Search output"
+            className="inline-flex h-7 w-7 items-center justify-center rounded border border-border bg-background text-muted-foreground hover:text-foreground"
+          >
+            <SearchIcon className="h-3.5 w-3.5" />
+          </button>
+          <TabsList className="h-8 rounded-md bg-muted p-0.5">
+            <TabsTrigger value="schema" className="h-7 px-3 text-xs">
+              Schema
+            </TabsTrigger>
+            <TabsTrigger value="table" className="h-7 px-3 text-xs">
+              Table
+            </TabsTrigger>
+            <TabsTrigger value="json" className="h-7 px-3 text-xs">
+              JSON
+            </TabsTrigger>
+          </TabsList>
+          <button
+            type="button"
+            aria-label="Edit output"
+            className="inline-flex h-7 w-7 items-center justify-center rounded border border-border bg-background text-muted-foreground hover:text-foreground"
+          >
+            <PencilIcon className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+
+      <div className="border-b border-border px-3 py-1.5 text-xs text-muted-foreground">
+        {itemCount} item{itemCount === 1 ? "" : "s"}
+      </div>
+
+      <div className="h-[calc(100%-74px)] min-w-0 overflow-hidden p-2">
+        <TabsContent value="schema" className="mt-0 h-full min-w-0 overflow-hidden">
+          <OutputSchemaTab parsedOutput={parsedOutput} />
+        </TabsContent>
+        <TabsContent value="table" className="mt-0 h-full min-w-0 overflow-hidden">
+          <OutputTableTab parsedOutput={parsedOutput} />
+        </TabsContent>
+        <TabsContent value="json" className="mt-0 h-full min-w-0 overflow-hidden">
+          <div className="h-full overflow-auto rounded-md bg-background/40 p-3 font-mono text-xs text-foreground">
+            <pre className="max-w-full whitespace-pre-wrap break-words">{prettyJsonOutput || "{}"}</pre>
+          </div>
+        </TabsContent>
+      </div>
+    </Tabs>
+  );
+}
+
+function NodeStatusBorder({
+  status,
+}: {
+  status: NodeRunStatus;
+}) {
+  if (status === "initial") return null;
+
+  if (status === "loading") {
+    return (
+      <>
+        <style>
+          {`
+            @keyframes workflow-node-border-spin {
+              from { transform: translate(-50%, -50%) rotate(0deg); }
+              to { transform: translate(-50%, -50%) rotate(360deg); }
+            }
+            .workflow-node-border-spinner {
+              animation: workflow-node-border-spin 2s linear infinite;
+              position: absolute;
+              left: 50%;
+              top: 50%;
+              width: 140%;
+              aspect-ratio: 1;
+              transform-origin: center;
+            }
+          `}
+        </style>
+        <div className="pointer-events-none absolute -top-1.5 -left-1.5 -z-10 h-[calc(100%+12px)] w-[calc(100%+12px)] rounded-[30px] bg-[#161616]" />
+        <div className="pointer-events-none absolute -top-1.5 -left-1.5 -z-10 h-[calc(100%+12px)] w-[calc(100%+12px)] overflow-hidden rounded-[30px]">
+          <div className="workflow-node-border-spinner rounded-full bg-[conic-gradient(from_0deg_at_50%_50%,rgb(42,67,233)_0deg,rgba(42,138,246,0)_360deg)]" />
+        </div>
+      </>
+    );
+  }
+
+  if (status === "success") {
+    return (
+      <>
+        <div className="pointer-events-none absolute -top-1.5 -left-1.5 -z-10 h-[calc(100%+12px)] w-[calc(100%+12px)] rounded-[30px] bg-[#161616]" />
+        <div className="pointer-events-none absolute -top-1.5 -left-1.5 -z-10 h-[calc(100%+12px)] w-[calc(100%+12px)] rounded-[30px] border-[3px] border-emerald-600/60" />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <div className="pointer-events-none absolute -top-1.5 -left-1.5 -z-10 h-[calc(100%+12px)] w-[calc(100%+12px)] rounded-[30px] bg-[#161616]" />
+      <div className="pointer-events-none absolute -top-1.5 -left-1.5 -z-10 h-[calc(100%+12px)] w-[calc(100%+12px)] rounded-[30px] border-[3px] border-red-600/60" />
+    </>
+  );
+}
 
 const EDGE_TYPE = "buttonEdge";
 
@@ -351,11 +674,7 @@ function ManualTriggerNode({ id, data }: NodeProps<Node<WorkflowNodeData>>) {
       <NodeTopToolbar onDelete={() => deleteNodeAndConnections(id, setNodes, setEdges, getNodes)} />
       <div className="flex items-center justify-center">
         <div className="relative flex h-[94px] w-[94px] items-center justify-center rounded-[24px] border border-[#3a3a3a] bg-[#1f1f1f] shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
-          {runStatus === "loading" && (
-            <div className="pointer-events-none absolute -inset-1 rounded-[26px] border-2 border-primary/30 border-t-primary animate-spin" />
-          )}
-          {runStatus === "success" && <div className="pointer-events-none absolute -inset-1 rounded-[26px] ring-2 ring-emerald-500/70" />}
-          {runStatus === "error" && <div className="pointer-events-none absolute -inset-1 rounded-[26px] ring-2 ring-red-500/70" />}
+          <NodeStatusBorder status={runStatus} />
           <MousePointerIcon className="size-11 text-[#8a8a8a] stroke-[1.8]" />
 
           {/* Visible connection source exactly on border center */}
@@ -410,11 +729,7 @@ function WebhookTriggerNode({ id, data }: NodeProps<Node<WorkflowNodeData>>) {
       <NodeTopToolbar onDelete={() => deleteNodeAndConnections(id, setNodes, setEdges, getNodes)} />
       <div className="flex items-center justify-center">
         <div className="relative flex h-[94px] w-[94px] items-center justify-center rounded-[24px] border border-[#3a3a3a] bg-[#1f1f1f] shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
-          {runStatus === "loading" && (
-            <div className="pointer-events-none absolute -inset-1 rounded-[26px] border-2 border-primary/30 border-t-primary animate-spin" />
-          )}
-          {runStatus === "success" && <div className="pointer-events-none absolute -inset-1 rounded-[26px] ring-2 ring-emerald-500/70" />}
-          {runStatus === "error" && <div className="pointer-events-none absolute -inset-1 rounded-[26px] ring-2 ring-red-500/70" />}
+          <NodeStatusBorder status={runStatus} />
           <WebhookIcon className="size-11 text-[#8a8a8a] stroke-[1.8]" />
           <Handle
             type="source"
@@ -464,11 +779,7 @@ function ScheduleTriggerNode({ id, data }: NodeProps<Node<WorkflowNodeData>>) {
       <NodeTopToolbar onDelete={() => deleteNodeAndConnections(id, setNodes, setEdges, getNodes)} />
       <div className="flex items-center justify-center">
         <div className="relative flex h-[94px] w-[94px] items-center justify-center rounded-[24px] border border-[#3a3a3a] bg-[#1f1f1f] shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
-          {runStatus === "loading" && (
-            <div className="pointer-events-none absolute -inset-1 rounded-[26px] border-2 border-primary/30 border-t-primary animate-spin" />
-          )}
-          {runStatus === "success" && <div className="pointer-events-none absolute -inset-1 rounded-[26px] ring-2 ring-emerald-500/70" />}
-          {runStatus === "error" && <div className="pointer-events-none absolute -inset-1 rounded-[26px] ring-2 ring-red-500/70" />}
+          <NodeStatusBorder status={runStatus} />
           <CalendarClockIcon className="size-11 text-[#8a8a8a] stroke-[1.8]" />
           <Handle
             type="source"
@@ -518,11 +829,7 @@ function HttpRequestNode({ id, data }: NodeProps<Node<WorkflowNodeData>>) {
       <NodeTopToolbar onDelete={() => deleteNodeAndConnections(id, setNodes, setEdges, getNodes)} />
       <div className="flex items-center justify-center">
         <div className="relative flex h-[94px] w-[94px] items-center justify-center rounded-[24px] border border-[#3a3a3a] bg-[#1f1f1f] shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
-          {runStatus === "loading" && (
-            <div className="pointer-events-none absolute -inset-1 rounded-[26px] border-2 border-primary/30 border-t-primary animate-spin" />
-          )}
-          {runStatus === "success" && <div className="pointer-events-none absolute -inset-1 rounded-[26px] ring-2 ring-emerald-500/70" />}
-          {runStatus === "error" && <div className="pointer-events-none absolute -inset-1 rounded-[26px] ring-2 ring-red-500/70" />}
+          <NodeStatusBorder status={runStatus} />
           <GlobeIcon className="size-11 text-[#8a8a8a] stroke-[1.8]" />
 
           <Handle
@@ -570,6 +877,7 @@ function GeminiExecutionNode({ id, data }: NodeProps<Node<WorkflowNodeData>>) {
     [edges, id]
   );
   const showAddAffordance = !isConnectingFromThisNode && !hasOutgoingConnection;
+  const runStatus = ctx?.getNodeStatus(id) ?? "initial";
 
   return (
     <div
@@ -579,6 +887,7 @@ function GeminiExecutionNode({ id, data }: NodeProps<Node<WorkflowNodeData>>) {
       <NodeTopToolbar onDelete={() => deleteNodeAndConnections(id, setNodes, setEdges, getNodes)} />
       <div className="flex items-center justify-center">
         <div className="relative flex h-[94px] w-[94px] items-center justify-center rounded-[24px] border border-[#3a3a3a] bg-[#1f1f1f] shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
+          <NodeStatusBorder status={runStatus} />
           <GeminiLogoIcon className="h-11 w-11" />
           <Handle
             type="target"
@@ -623,6 +932,7 @@ function ChatGptExecutionNode({ id, data }: NodeProps<Node<WorkflowNodeData>>) {
     [edges, id]
   );
   const showAddAffordance = !isConnectingFromThisNode && !hasOutgoingConnection;
+  const runStatus = ctx?.getNodeStatus(id) ?? "initial";
 
   return (
     <div
@@ -632,6 +942,7 @@ function ChatGptExecutionNode({ id, data }: NodeProps<Node<WorkflowNodeData>>) {
       <NodeTopToolbar onDelete={() => deleteNodeAndConnections(id, setNodes, setEdges, getNodes)} />
       <div className="flex items-center justify-center">
         <div className="relative flex h-[94px] w-[94px] items-center justify-center rounded-[24px] border border-[#3a3a3a] bg-[#1f1f1f] shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
+          <NodeStatusBorder status={runStatus} />
           <OpenAiLogoIcon className="h-11 w-11" />
           <Handle
             type="target"
@@ -676,6 +987,7 @@ function AnthropicExecutionNode({ id, data }: NodeProps<Node<WorkflowNodeData>>)
     [edges, id]
   );
   const showAddAffordance = !isConnectingFromThisNode && !hasOutgoingConnection;
+  const runStatus = ctx?.getNodeStatus(id) ?? "initial";
 
   return (
     <div
@@ -685,6 +997,7 @@ function AnthropicExecutionNode({ id, data }: NodeProps<Node<WorkflowNodeData>>)
       <NodeTopToolbar onDelete={() => deleteNodeAndConnections(id, setNodes, setEdges, getNodes)} />
       <div className="flex items-center justify-center">
         <div className="relative flex h-[94px] w-[94px] items-center justify-center rounded-[24px] border border-[#3a3a3a] bg-[#1f1f1f] shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
+          <NodeStatusBorder status={runStatus} />
           <AnthropicLogoIcon className="h-11 w-11" />
           <Handle
             type="target"
@@ -729,6 +1042,7 @@ function TavilyExecutionNode({ id, data }: NodeProps<Node<WorkflowNodeData>>) {
     [edges, id]
   );
   const showAddAffordance = !isConnectingFromThisNode && !hasOutgoingConnection;
+  const runStatus = ctx?.getNodeStatus(id) ?? "initial";
 
   return (
     <div
@@ -738,6 +1052,7 @@ function TavilyExecutionNode({ id, data }: NodeProps<Node<WorkflowNodeData>>) {
       <NodeTopToolbar onDelete={() => deleteNodeAndConnections(id, setNodes, setEdges, getNodes)} />
       <div className="flex items-center justify-center">
         <div className="relative flex h-[94px] w-[94px] items-center justify-center rounded-[24px] border border-[#3a3a3a] bg-[#1f1f1f] shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
+          <NodeStatusBorder status={runStatus} />
           <TavilyLogoIcon className="h-11 w-11" />
           <Handle
             type="target"
@@ -882,6 +1197,7 @@ export function WorkflowEditor({
       status: "running" | "success" | "error" | "skipped";
       message?: string;
       statusCode?: number;
+      output?: string;
     }>
   >([]);
   const [connectingFromNodeId, setConnectingFromNodeId] = React.useState<string | null>(null);
@@ -1121,6 +1437,21 @@ export function WorkflowEditor({
   const filteredExecutionNodeOptions = executionNodeOptions.filter((option) =>
     `${option.label} ${option.description}`.toLowerCase().includes(normalizedQuery)
   );
+  const parsedOutput = React.useMemo(() => {
+    const raw = nodeEditor.outputSample?.trim();
+    if (!raw) return null;
+    try {
+      return JSON.parse(raw) as unknown;
+    } catch {
+      return null;
+    }
+  }, [nodeEditor.outputSample]);
+  const prettyJsonOutput = React.useMemo(() => {
+    if (parsedOutput !== null) {
+      return JSON.stringify(parsedOutput, null, 2);
+    }
+    return nodeEditor.outputSample || "";
+  }, [nodeEditor.outputSample, parsedOutput]);
 
   return (
     <SelectorContext.Provider
@@ -1224,6 +1555,7 @@ export function WorkflowEditor({
                     setIsExecuting(true);
                     const now = new Date().toLocaleTimeString();
                     setLastExecutedAt(now);
+                    setExecutionStatuses([]);
                     const initialStatuses: Record<string, NodeRunStatus> = {};
                     for (const node of nodes) {
                       initialStatuses[node.id] = "initial";
@@ -1235,46 +1567,117 @@ export function WorkflowEditor({
                     setNodeStatuses(initialStatuses);
                     try {
                       if (onExecuteWorkflow) {
+                        const toNodeRunStatus = (
+                          status: "running" | "success" | "error" | "skipped"
+                        ): NodeRunStatus =>
+                          status === "success"
+                            ? "success"
+                            : status === "error"
+                              ? "error"
+                              : status === "running"
+                                ? "loading"
+                                : "initial";
                         const streamedStatuses: Array<{
                           nodeId: string;
                           label: string;
                           status: "running" | "success" | "error" | "skipped";
                           message?: string;
                           statusCode?: number;
+                          output?: string;
                         }> = [];
                         const result = await onExecuteWorkflow((status) => {
                           streamedStatuses.push(status);
                           setExecutionStatuses([...streamedStatuses]);
 
-                          setNodeStatuses((current) => ({
-                            ...current,
-                            [status.nodeId]:
-                              status.status === "success"
-                                ? "success"
-                                : status.status === "error"
-                                  ? "error"
-                                  : status.status === "running"
-                                    ? "loading"
-                                    : "initial",
-                          }));
+                          setNodeStatuses((current) => {
+                            const next = { ...current };
+                            if (status.status === "running") {
+                              for (const nodeId of Object.keys(next)) {
+                                if (next[nodeId] === "loading" && nodeId !== status.nodeId) {
+                                  next[nodeId] = "success";
+                                }
+                              }
+                            }
+                            next[status.nodeId] = toNodeRunStatus(status.status);
+                            return next;
+                          });
+
+                          if (status.output) {
+                            setNodes((currentNodes) =>
+                              currentNodes.map((node) =>
+                                node.id === status.nodeId
+                                  ? {
+                                      ...node,
+                                      data: {
+                                        ...(node.data as WorkflowNodeData),
+                                        outputSample: status.output ?? "",
+                                      },
+                                    }
+                                  : node
+                              )
+                            );
+                            setNodeEditor((currentEditor) =>
+                              currentEditor.nodeId === status.nodeId
+                                ? {
+                                    ...currentEditor,
+                                    outputSample: status.output ?? "",
+                                  }
+                                : currentEditor
+                            );
+                          }
                         });
-                        setExecutionStatuses(result?.statuses ?? []);
-                        if (result?.statuses?.length) {
+                        const finalStatuses = result?.statuses?.length
+                          ? result.statuses
+                          : streamedStatuses;
+                        setExecutionStatuses(finalStatuses);
+                        if (finalStatuses.length) {
                           const mapped: Record<string, NodeRunStatus> = { ...initialStatuses };
 
-                          for (const item of result.statuses) {
-                            mapped[item.nodeId] =
-                              item.status === "success"
-                                ? "success"
-                                : item.status === "error"
-                                  ? "error"
-                                  : item.status === "running"
-                                    ? "loading"
-                                    : "initial";
-                            setNodeStatuses({ ...mapped });
+                          for (const item of finalStatuses) {
+                            mapped[item.nodeId] = toNodeRunStatus(item.status);
+                            if (item.output) {
+                              setNodes((currentNodes) =>
+                                currentNodes.map((node) =>
+                                  node.id === item.nodeId
+                                    ? {
+                                        ...node,
+                                        data: {
+                                          ...(node.data as WorkflowNodeData),
+                                          outputSample: item.output ?? "",
+                                        },
+                                      }
+                                    : node
+                                )
+                              );
+                              setNodeEditor((currentEditor) =>
+                                currentEditor.nodeId === item.nodeId
+                                  ? {
+                                      ...currentEditor,
+                                      outputSample: item.output ?? "",
+                                    }
+                                  : currentEditor
+                              );
+                            }
                           }
+                          setNodeStatuses(mapped);
                         } else {
-                          setNodeStatuses(initialStatuses);
+                          setNodeStatuses(() => {
+                            const fallbackStatuses = { ...initialStatuses };
+                            if (manualNode) {
+                              fallbackStatuses[manualNode.id] = "error";
+                            }
+                            return fallbackStatuses;
+                          });
+                          if (manualNode) {
+                            setExecutionStatuses([
+                              {
+                                nodeId: manualNode.id,
+                                label: (manualNode.data as WorkflowNodeData)?.label || "Manual Trigger",
+                                status: "error",
+                                message: "Execution stream ended before node updates were received.",
+                              },
+                            ]);
+                          }
                         }
                       } else {
                         setExecutionStatuses([
@@ -1598,30 +2001,10 @@ export function WorkflowEditor({
                       onMouseDown={() => setIsResizing("right")}
                     />
 
-                    <div className="p-4">
-                      <p className="mb-3 text-xs font-semibold text-muted-foreground">Output</p>
-                      <textarea
-                        value={nodeEditor.outputSample}
-                        onChange={(event) => {
-                          const nextValue = event.target.value;
-                          setNodeEditor((current) => ({ ...current, outputSample: nextValue }));
-                          if (!nodeEditor.nodeId) return;
-                          setNodes((currentNodes) =>
-                            currentNodes.map((node) =>
-                              node.id === nodeEditor.nodeId
-                                ? {
-                                    ...node,
-                                    data: {
-                                      ...(node.data as WorkflowNodeData),
-                                      outputSample: nextValue,
-                                    },
-                                  }
-                                : node
-                            )
-                          );
-                        }}
-                        className="h-[calc(100%-22px)] w-full resize-none rounded-md border border-border bg-card p-3 font-mono text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
-                      />
+                    <div className="min-w-0 overflow-hidden p-4">
+                      <div className="h-[calc(100%-22px)]">
+                        <OutputTabsPanel parsedOutput={parsedOutput} prettyJsonOutput={prettyJsonOutput} />
+                      </div>
                     </div>
                   </div>
                 </div>

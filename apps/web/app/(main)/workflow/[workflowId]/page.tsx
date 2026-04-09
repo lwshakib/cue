@@ -129,9 +129,38 @@ export default function WorkflowByIdPage({ params }: WorkflowPageProps) {
     status: "running" | "success" | "error" | "skipped"
     message?: string
     statusCode?: number
+    output?: string
   }) => void) => {
     const token = getSessionToken()
     if (!token) return null
+
+    const executeViaApi = async () => {
+      const response = await fetch(`/api/workflow/${workflowId}/execute`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      if (!response.ok) {
+        throw new Error(`Execute API failed with status ${response.status}`)
+      }
+
+      const payload = await response.json()
+      const run = payload?.run
+      if (!run) return null
+
+      const statuses = Array.isArray(run.statuses) ? run.statuses : []
+      for (const status of statuses) {
+        onStatus(status)
+      }
+
+      return {
+        workflowId: String(run.workflowId ?? workflowId),
+        executedAt: String(run.executedAt ?? new Date().toISOString()),
+        statuses,
+      }
+    }
 
     try {
       const streamUrl = new URL(`/api/workflow/${workflowId}/execute/stream`, window.location.origin)
@@ -146,13 +175,29 @@ export default function WorkflowByIdPage({ params }: WorkflowPageProps) {
           status: "running" | "success" | "error" | "skipped"
           message?: string
           statusCode?: number
+          output?: string
         }>
       } | null>((resolve) => {
         const eventSource = new EventSource(streamUrl.toString())
+        let hasAnyNodeStatus = false
+        let settled = false
+
+        const finishWithFallback = async () => {
+          if (settled) return
+          settled = true
+          eventSource.close()
+          try {
+            const fallbackResult = await executeViaApi()
+            resolve(fallbackResult)
+          } catch {
+            resolve(null)
+          }
+        }
 
         eventSource.addEventListener("node-status", (event) => {
           try {
             const data = JSON.parse((event as MessageEvent).data)
+            hasAnyNodeStatus = true
             onStatus(data)
           } catch (error) {
             console.error("[WorkflowPage] Invalid node-status payload:", error)
@@ -160,8 +205,15 @@ export default function WorkflowByIdPage({ params }: WorkflowPageProps) {
         })
 
         eventSource.addEventListener("completed", (event) => {
+          if (settled) return
+          settled = true
           try {
             const data = JSON.parse((event as MessageEvent).data)
+            if (!hasAnyNodeStatus && Array.isArray(data?.statuses)) {
+              for (const status of data.statuses) {
+                onStatus(status)
+              }
+            }
             resolve(data)
           } catch {
             resolve(null)
@@ -171,13 +223,16 @@ export default function WorkflowByIdPage({ params }: WorkflowPageProps) {
         })
 
         eventSource.addEventListener("error", () => {
-          eventSource.close()
-          resolve(null)
+          void finishWithFallback()
         })
       })
     } catch (error) {
       console.error("[WorkflowPage] Execute workflow failed:", error)
-      return null
+      try {
+        return await executeViaApi()
+      } catch {
+        return null
+      }
     }
   }, [workflowId])
 

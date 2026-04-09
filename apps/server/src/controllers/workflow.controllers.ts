@@ -24,6 +24,7 @@ type WorkflowRunStatus = {
   status: "running" | "success" | "error" | "skipped";
   message?: string;
   statusCode?: number;
+  output?: string;
 };
 
 const runWorkflowSequence = async (
@@ -72,7 +73,7 @@ const runWorkflowSequence = async (
     const node = nodeById.get(cursorId);
     if (!node) break;
 
-    if (node.type === "manualTrigger") {
+    if (node.type === "manualTrigger" || node.type === "manual-trigger") {
       emit({
         nodeId: node.id,
         label: node.data?.label || "Manual Trigger",
@@ -85,7 +86,7 @@ const runWorkflowSequence = async (
         status: "success",
         message: "Triggered manually",
       });
-    } else if (node.type === "httpRequest") {
+    } else if (node.type === "httpRequest" || node.type === "http-request") {
       const method = (node.data?.method || "GET").toUpperCase();
       const url = node.data?.url;
       const payload = node.data?.inputSample;
@@ -120,12 +121,20 @@ const runWorkflowSequence = async (
         }
 
         const response = await fetch(url, requestInit);
+        const rawBody = await response.text();
+        let output = rawBody;
+        try {
+          output = JSON.stringify(JSON.parse(rawBody), null, 2);
+        } catch {
+          // Keep non-JSON response bodies as-is.
+        }
         emit({
           nodeId: node.id,
           label: node.data?.label || "HTTP Request",
           status: response.ok ? "success" : "error",
           message: response.ok ? "Request succeeded" : "Request failed",
           statusCode: response.status,
+          output,
         });
 
         if (!response.ok) break;
