@@ -352,12 +352,66 @@ function OutputSchemaTab({
     );
   }
 
+  const isArrayOutput = Array.isArray(parsedOutput);
+  const arrayFirstItem = isArrayOutput ? parsedOutput[0] : null;
+  const isObjectOutput = !isArrayOutput && getJsonType(parsedOutput) === "object";
+
+  if (isArrayOutput) {
+    if (arrayFirstItem && getJsonType(arrayFirstItem) === "object") {
+      return (
+        <div className="h-full overflow-auto rounded-md bg-background/40 py-1">
+          {Object.entries(arrayFirstItem as Record<string, unknown>).map(([field, value]) => (
+            <SchemaTreeNode
+              key={`schema-array-field-${field}`}
+              field={field}
+              value={value}
+              depth={0}
+              path={field}
+              draggableFields={draggableFields}
+              onFieldDragStart={onFieldDragStart}
+            />
+          ))}
+        </div>
+      );
+    }
+
+    return (
+      <div className="h-full overflow-auto rounded-md bg-background/40 py-1">
+        <SchemaTreeNode
+          field="value"
+          value={arrayFirstItem ?? ""}
+          path="value"
+          draggableFields={draggableFields}
+          onFieldDragStart={onFieldDragStart}
+        />
+      </div>
+    );
+  }
+
+  if (isObjectOutput) {
+    return (
+      <div className="h-full overflow-auto rounded-md bg-background/40 py-1">
+        {Object.entries(parsedOutput as Record<string, unknown>).map(([field, value]) => (
+          <SchemaTreeNode
+            key={`schema-object-field-${field}`}
+            field={field}
+            value={value}
+            depth={0}
+            path={field}
+            draggableFields={draggableFields}
+            onFieldDragStart={onFieldDragStart}
+          />
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="h-full overflow-auto rounded-md bg-background/40 py-1">
       <SchemaTreeNode
-        field={Array.isArray(parsedOutput) ? "[0]" : "root"}
-        value={Array.isArray(parsedOutput) ? parsedOutput[0] ?? {} : parsedOutput}
-        path={Array.isArray(parsedOutput) ? "[0]" : "root"}
+        field="value"
+        value={parsedOutput}
+        path="value"
         draggableFields={draggableFields}
         onFieldDragStart={onFieldDragStart}
       />
@@ -2489,6 +2543,28 @@ export function WorkflowEditor({
                                 )
                               );
                             }}
+                            onDragOver={(event) => event.preventDefault()}
+                            onDrop={(event) => {
+                              event.preventDefault();
+                              const path = event.dataTransfer.getData("text/plain");
+                              if (!path) return;
+                              const nextValue = appendExpression(nodeEditor.url, path);
+                              setNodeEditor((current) => ({ ...current, url: nextValue }));
+                              if (!nodeEditor.nodeId) return;
+                              setNodes((currentNodes) =>
+                                currentNodes.map((node) =>
+                                  node.id === nodeEditor.nodeId
+                                    ? {
+                                        ...node,
+                                        data: {
+                                          ...(node.data as WorkflowNodeData),
+                                          url: nextValue,
+                                        },
+                                      }
+                                    : node
+                                )
+                              );
+                            }}
                             placeholder="https://api.example.com/resource"
                           />
                         </div>
@@ -2698,7 +2774,12 @@ export function WorkflowEditor({
                                       const path = event.dataTransfer.getData("text/plain");
                                       if (!path) return;
                                       const nextValue = appendExpression(nodeEditor.queryParamsJson, path);
-                                      setNodeEditor((current) => ({ ...current, queryParamsJson: nextValue }));
+                                      setNodeEditor((current) => ({
+                                        ...current,
+                                        queryParamsJson: nextValue,
+                                        queryParamsJsonType: "expression",
+                                        queryParamsSpecifierType: "expression",
+                                      }));
                                       if (!nodeEditor.nodeId) return;
                                       setNodes((currentNodes) =>
                                         currentNodes.map((node) =>
@@ -2708,6 +2789,8 @@ export function WorkflowEditor({
                                                 data: {
                                                   ...(node.data as WorkflowNodeData),
                                                   queryParamsJson: nextValue,
+                                                  queryParamsJsonType: "expression",
+                                                  queryParamsSpecifierType: "expression",
                                                 },
                                               }
                                             : node
@@ -2834,7 +2917,11 @@ export function WorkflowEditor({
                                                     const nextParams = nodeEditor.queryParams.map((item) =>
                                                       item.id === param.id ? { ...item, name: event.target.value } : item
                                                     );
-                                                    setNodeEditor((current) => ({ ...current, queryParams: nextParams }));
+                                                    setNodeEditor((current) => ({
+                                                      ...current,
+                                                      queryParams: nextParams,
+                                                      queryParamsSpecifierType: "expression",
+                                                    }));
                                                     if (!nodeEditor.nodeId) return;
                                                     setNodes((currentNodes) =>
                                                       currentNodes.map((node) =>
@@ -2844,6 +2931,7 @@ export function WorkflowEditor({
                                                               data: {
                                                                 ...(node.data as WorkflowNodeData),
                                                                 queryParams: nextParams,
+                                                                queryParamsSpecifierType: "expression",
                                                               },
                                                             }
                                                           : node
@@ -2857,10 +2945,19 @@ export function WorkflowEditor({
                                                     if (!path) return;
                                                     const nextParams = nodeEditor.queryParams.map((item) =>
                                                       item.id === param.id
-                                                        ? { ...item, name: appendExpression(item.name, path) }
+                                                        ? {
+                                                            ...item,
+                                                            name: appendExpression(item.name, path),
+                                                            valueType: "expression" as const,
+                                                          }
                                                         : item
                                                     );
-                                                    setNodeEditor((current) => ({ ...current, queryParams: nextParams }));
+                                                    setNodeEditor((current) => ({
+                                                      ...current,
+                                                      queryParams: nextParams,
+                                                      queryParamsSpecifierType: "expression",
+                                                    }));
+                                                    setNodeEditor((current) => ({ ...current, queryParamsSpecifierType: "expression" }));
                                                     if (!nodeEditor.nodeId) return;
                                                     setNodes((currentNodes) =>
                                                       currentNodes.map((node) =>
@@ -2870,6 +2967,7 @@ export function WorkflowEditor({
                                                               data: {
                                                                 ...(node.data as WorkflowNodeData),
                                                                 queryParams: nextParams,
+                                                                queryParamsSpecifierType: "expression",
                                                               },
                                                             }
                                                           : node
@@ -2961,6 +3059,7 @@ export function WorkflowEditor({
                                                               data: {
                                                                 ...(node.data as WorkflowNodeData),
                                                                 queryParams: nextParams,
+                                                                queryParamsSpecifierType: "expression",
                                                               },
                                                             }
                                                           : node
@@ -2974,7 +3073,11 @@ export function WorkflowEditor({
                                                     if (!path) return;
                                                     const nextParams = nodeEditor.queryParams.map((item) =>
                                                       item.id === param.id
-                                                        ? { ...item, value: appendExpression(item.value, path) }
+                                                        ? {
+                                                            ...item,
+                                                            value: appendExpression(item.value, path),
+                                                            valueType: "expression" as const,
+                                                          }
                                                         : item
                                                     );
                                                     setNodeEditor((current) => ({ ...current, queryParams: nextParams }));
@@ -3111,12 +3214,25 @@ export function WorkflowEditor({
                                     const path = event.dataTransfer.getData("text/plain");
                                     if (!path) return;
                                     const nextValue = appendExpression(nodeEditor.headersJson, path);
-                                    setNodeEditor((current) => ({ ...current, headersJson: nextValue }));
+                                    setNodeEditor((current) => ({
+                                      ...current,
+                                      headersJson: nextValue,
+                                      headersJsonType: "expression",
+                                      headersSpecifierType: "expression",
+                                    }));
                                     if (!nodeEditor.nodeId) return;
                                     setNodes((currentNodes) =>
                                       currentNodes.map((node) =>
                                         node.id === nodeEditor.nodeId
-                                          ? { ...node, data: { ...(node.data as WorkflowNodeData), headersJson: nextValue } }
+                                          ? {
+                                              ...node,
+                                              data: {
+                                                ...(node.data as WorkflowNodeData),
+                                                headersJson: nextValue,
+                                                headersJsonType: "expression",
+                                                headersSpecifierType: "expression",
+                                              },
+                                            }
                                           : node
                                       )
                                     );
@@ -3135,11 +3251,51 @@ export function WorkflowEditor({
                                             item.id === header.id ? { ...item, name: event.target.value } : item
                                           );
                                           setNodeEditor((current) => ({ ...current, headers: nextHeaders }));
+                                          setNodeEditor((current) => ({ ...current, headersSpecifierType: "expression" }));
                                           if (!nodeEditor.nodeId) return;
                                           setNodes((currentNodes) =>
                                             currentNodes.map((node) =>
                                               node.id === nodeEditor.nodeId
-                                                ? { ...node, data: { ...(node.data as WorkflowNodeData), headers: nextHeaders } }
+                                                ? {
+                                                    ...node,
+                                                    data: {
+                                                      ...(node.data as WorkflowNodeData),
+                                                      headers: nextHeaders,
+                                                      headersSpecifierType: "expression",
+                                                    },
+                                                  }
+                                                : node
+                                            )
+                                          );
+                                        }}
+                                        onDragOver={(event) => event.preventDefault()}
+                                        onDrop={(event) => {
+                                          event.preventDefault();
+                                          const path = event.dataTransfer.getData("text/plain");
+                                          if (!path) return;
+                                          const nextHeaders = nodeEditor.headers.map((item) =>
+                                            item.id === header.id
+                                              ? {
+                                                  ...item,
+                                                  name: appendExpression(item.name, path),
+                                                  valueType: "expression" as const,
+                                                }
+                                              : item
+                                          );
+                                          setNodeEditor((current) => ({ ...current, headers: nextHeaders }));
+                                          setNodeEditor((current) => ({ ...current, headersSpecifierType: "expression" }));
+                                          if (!nodeEditor.nodeId) return;
+                                          setNodes((currentNodes) =>
+                                            currentNodes.map((node) =>
+                                              node.id === nodeEditor.nodeId
+                                                ? {
+                                                    ...node,
+                                                    data: {
+                                                      ...(node.data as WorkflowNodeData),
+                                                      headers: nextHeaders,
+                                                      headersSpecifierType: "expression",
+                                                    },
+                                                  }
                                                 : node
                                             )
                                           );
@@ -3169,7 +3325,13 @@ export function WorkflowEditor({
                                           const path = event.dataTransfer.getData("text/plain");
                                           if (!path) return;
                                           const nextHeaders = nodeEditor.headers.map((item) =>
-                                            item.id === header.id ? { ...item, value: appendExpression(item.value, path) } : item
+                                            item.id === header.id
+                                              ? {
+                                                  ...item,
+                                                  value: appendExpression(item.value, path),
+                                                  valueType: "expression" as const,
+                                                }
+                                              : item
                                           );
                                           setNodeEditor((current) => ({ ...current, headers: nextHeaders }));
                                           if (!nodeEditor.nodeId) return;
@@ -3311,12 +3473,25 @@ export function WorkflowEditor({
                                     const path = event.dataTransfer.getData("text/plain");
                                     if (!path) return;
                                     const nextValue = appendExpression(nodeEditor.bodyJson, path);
-                                    setNodeEditor((current) => ({ ...current, bodyJson: nextValue }));
+                                    setNodeEditor((current) => ({
+                                      ...current,
+                                      bodyJson: nextValue,
+                                      bodyJsonType: "expression",
+                                      bodySpecifierType: "expression",
+                                    }));
                                     if (!nodeEditor.nodeId) return;
                                     setNodes((currentNodes) =>
                                       currentNodes.map((node) =>
                                         node.id === nodeEditor.nodeId
-                                          ? { ...node, data: { ...(node.data as WorkflowNodeData), bodyJson: nextValue } }
+                                          ? {
+                                              ...node,
+                                              data: {
+                                                ...(node.data as WorkflowNodeData),
+                                                bodyJson: nextValue,
+                                                bodyJsonType: "expression",
+                                                bodySpecifierType: "expression",
+                                              },
+                                            }
                                           : node
                                       )
                                     );
@@ -3335,11 +3510,51 @@ export function WorkflowEditor({
                                             item.id === field.id ? { ...item, name: event.target.value } : item
                                           );
                                           setNodeEditor((current) => ({ ...current, bodyFields: nextFields }));
+                                          setNodeEditor((current) => ({ ...current, bodySpecifierType: "expression" }));
                                           if (!nodeEditor.nodeId) return;
                                           setNodes((currentNodes) =>
                                             currentNodes.map((node) =>
                                               node.id === nodeEditor.nodeId
-                                                ? { ...node, data: { ...(node.data as WorkflowNodeData), bodyFields: nextFields } }
+                                                ? {
+                                                    ...node,
+                                                    data: {
+                                                      ...(node.data as WorkflowNodeData),
+                                                      bodyFields: nextFields,
+                                                      bodySpecifierType: "expression",
+                                                    },
+                                                  }
+                                                : node
+                                            )
+                                          );
+                                        }}
+                                        onDragOver={(event) => event.preventDefault()}
+                                        onDrop={(event) => {
+                                          event.preventDefault();
+                                          const path = event.dataTransfer.getData("text/plain");
+                                          if (!path) return;
+                                          const nextFields = nodeEditor.bodyFields.map((item) =>
+                                            item.id === field.id
+                                              ? {
+                                                  ...item,
+                                                  name: appendExpression(item.name, path),
+                                                  valueType: "expression" as const,
+                                                }
+                                              : item
+                                          );
+                                          setNodeEditor((current) => ({ ...current, bodyFields: nextFields }));
+                                          setNodeEditor((current) => ({ ...current, bodySpecifierType: "expression" }));
+                                          if (!nodeEditor.nodeId) return;
+                                          setNodes((currentNodes) =>
+                                            currentNodes.map((node) =>
+                                              node.id === nodeEditor.nodeId
+                                                ? {
+                                                    ...node,
+                                                    data: {
+                                                      ...(node.data as WorkflowNodeData),
+                                                      bodyFields: nextFields,
+                                                      bodySpecifierType: "expression",
+                                                    },
+                                                  }
                                                 : node
                                             )
                                           );
@@ -3369,7 +3584,13 @@ export function WorkflowEditor({
                                           const path = event.dataTransfer.getData("text/plain");
                                           if (!path) return;
                                           const nextFields = nodeEditor.bodyFields.map((item) =>
-                                            item.id === field.id ? { ...item, value: appendExpression(item.value, path) } : item
+                                            item.id === field.id
+                                              ? {
+                                                  ...item,
+                                                  value: appendExpression(item.value, path),
+                                                  valueType: "expression" as const,
+                                                }
+                                              : item
                                           );
                                           setNodeEditor((current) => ({ ...current, bodyFields: nextFields }));
                                           if (!nodeEditor.nodeId) return;
