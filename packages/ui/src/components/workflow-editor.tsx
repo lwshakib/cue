@@ -29,6 +29,7 @@ import { useTheme } from "next-themes";
 import {
   CalendarClockIcon,
   EllipsisIcon,
+  ExternalLinkIcon,
   GlobeIcon,
   MousePointerIcon,
   PlayIcon,
@@ -44,6 +45,13 @@ import {
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
 import { Input } from "./ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 
 type WorkflowEditorProps = {
   initialNodes?: Node[];
@@ -53,6 +61,10 @@ type WorkflowEditorProps = {
 
 type WorkflowNodeData = {
   label: string;
+  method?: string;
+  url?: string;
+  inputSample?: string;
+  outputSample?: string;
 };
 
 const EDGE_TYPE = "buttonEdge";
@@ -143,6 +155,7 @@ function deleteNodeAndConnections(
 
 const SelectorContext = React.createContext<{
   openSelector: (sourceNodeId?: string, mode?: "all" | "executions") => void;
+  openNodeEditor: (nodeId: string, label: string, kind: "Trigger" | "Execution") => void;
   connectingFromNodeId: string | null;
 } | null>(null);
 
@@ -311,7 +324,10 @@ function ManualTriggerNode({ id, data }: NodeProps<Node<WorkflowNodeData>>) {
   const showAddAffordance = !isConnectingFromThisNode && !hasOutgoingConnection;
 
   return (
-    <div className="group/node relative w-[244px]">
+    <div
+      className="group/node relative w-[244px]"
+      onDoubleClick={() => ctx?.openNodeEditor(id, data.label, "Trigger")}
+    >
       <NodeTopToolbar onDelete={() => deleteNodeAndConnections(id, setNodes, setEdges, getNodes)} />
       <div className="flex items-center justify-center">
         <div className="relative flex h-[94px] w-[94px] items-center justify-center rounded-[24px] border border-[#3a3a3a] bg-[#1f1f1f] shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
@@ -361,7 +377,10 @@ function WebhookTriggerNode({ id, data }: NodeProps<Node<WorkflowNodeData>>) {
   const showAddAffordance = !isConnectingFromThisNode && !hasOutgoingConnection;
 
   return (
-    <div className="group/node relative w-[244px]">
+    <div
+      className="group/node relative w-[244px]"
+      onDoubleClick={() => ctx?.openNodeEditor(id, data.label, "Trigger")}
+    >
       <NodeTopToolbar onDelete={() => deleteNodeAndConnections(id, setNodes, setEdges, getNodes)} />
       <div className="flex items-center justify-center">
         <div className="relative flex h-[94px] w-[94px] items-center justify-center rounded-[24px] border border-[#3a3a3a] bg-[#1f1f1f] shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
@@ -406,7 +425,10 @@ function ScheduleTriggerNode({ id, data }: NodeProps<Node<WorkflowNodeData>>) {
   const showAddAffordance = !isConnectingFromThisNode && !hasOutgoingConnection;
 
   return (
-    <div className="group/node relative w-[244px]">
+    <div
+      className="group/node relative w-[244px]"
+      onDoubleClick={() => ctx?.openNodeEditor(id, data.label, "Trigger")}
+    >
       <NodeTopToolbar onDelete={() => deleteNodeAndConnections(id, setNodes, setEdges, getNodes)} />
       <div className="flex items-center justify-center">
         <div className="relative flex h-[94px] w-[94px] items-center justify-center rounded-[24px] border border-[#3a3a3a] bg-[#1f1f1f] shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
@@ -451,7 +473,10 @@ function HttpRequestNode({ id, data }: NodeProps<Node<WorkflowNodeData>>) {
   const showAddAffordance = !isConnectingFromThisNode && !hasOutgoingConnection;
 
   return (
-    <div className="group/node relative w-[244px]">
+    <div
+      className="group/node relative w-[244px]"
+      onDoubleClick={() => ctx?.openNodeEditor(id, data.label, "Execution")}
+    >
       <NodeTopToolbar onDelete={() => deleteNodeAndConnections(id, setNodes, setEdges, getNodes)} />
       <div className="flex items-center justify-center">
         <div className="relative flex h-[94px] w-[94px] items-center justify-center rounded-[24px] border border-[#3a3a3a] bg-[#1f1f1f] shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
@@ -504,7 +529,10 @@ function GeminiExecutionNode({ id, data }: NodeProps<Node<WorkflowNodeData>>) {
   const showAddAffordance = !isConnectingFromThisNode && !hasOutgoingConnection;
 
   return (
-    <div className="group/node relative w-[244px]">
+    <div
+      className="group/node relative w-[244px]"
+      onDoubleClick={() => ctx?.openNodeEditor(id, data.label, "Execution")}
+    >
       <NodeTopToolbar onDelete={() => deleteNodeAndConnections(id, setNodes, setEdges, getNodes)} />
       <div className="flex items-center justify-center">
         <div className="relative flex h-[94px] w-[94px] items-center justify-center rounded-[24px] border border-[#3a3a3a] bg-[#1f1f1f] shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
@@ -554,7 +582,10 @@ function ChatGptExecutionNode({ id, data }: NodeProps<Node<WorkflowNodeData>>) {
   const showAddAffordance = !isConnectingFromThisNode && !hasOutgoingConnection;
 
   return (
-    <div className="group/node relative w-[244px]">
+    <div
+      className="group/node relative w-[244px]"
+      onDoubleClick={() => ctx?.openNodeEditor(id, data.label, "Execution")}
+    >
       <NodeTopToolbar onDelete={() => deleteNodeAndConnections(id, setNodes, setEdges, getNodes)} />
       <div className="flex items-center justify-center">
         <div className="relative flex h-[94px] w-[94px] items-center justify-center rounded-[24px] border border-[#3a3a3a] bg-[#1f1f1f] shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
@@ -604,7 +635,10 @@ function AnthropicExecutionNode({ id, data }: NodeProps<Node<WorkflowNodeData>>)
   const showAddAffordance = !isConnectingFromThisNode && !hasOutgoingConnection;
 
   return (
-    <div className="group/node relative w-[244px]">
+    <div
+      className="group/node relative w-[244px]"
+      onDoubleClick={() => ctx?.openNodeEditor(id, data.label, "Execution")}
+    >
       <NodeTopToolbar onDelete={() => deleteNodeAndConnections(id, setNodes, setEdges, getNodes)} />
       <div className="flex items-center justify-center">
         <div className="relative flex h-[94px] w-[94px] items-center justify-center rounded-[24px] border border-[#3a3a3a] bg-[#1f1f1f] shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
@@ -654,7 +688,10 @@ function TavilyExecutionNode({ id, data }: NodeProps<Node<WorkflowNodeData>>) {
   const showAddAffordance = !isConnectingFromThisNode && !hasOutgoingConnection;
 
   return (
-    <div className="group/node relative w-[244px]">
+    <div
+      className="group/node relative w-[244px]"
+      onDoubleClick={() => ctx?.openNodeEditor(id, data.label, "Execution")}
+    >
       <NodeTopToolbar onDelete={() => deleteNodeAndConnections(id, setNodes, setEdges, getNodes)} />
       <div className="flex items-center justify-center">
         <div className="relative flex h-[94px] w-[94px] items-center justify-center rounded-[24px] border border-[#3a3a3a] bg-[#1f1f1f] shadow-[0_0_0_1px_rgba(255,255,255,0.02)]">
@@ -792,6 +829,30 @@ export function WorkflowEditor({
   const [searchQuery, setSearchQuery] = React.useState("");
   const [lastExecutedAt, setLastExecutedAt] = React.useState<string | null>(null);
   const [connectingFromNodeId, setConnectingFromNodeId] = React.useState<string | null>(null);
+  const [nodeEditor, setNodeEditor] = React.useState<{
+    isOpen: boolean;
+    nodeId: string | null;
+    kind: "Trigger" | "Execution";
+    nodeType: string | null;
+    value: string;
+    method: string;
+    url: string;
+    inputSample: string;
+    outputSample: string;
+  }>({
+    isOpen: false,
+    nodeId: null,
+    kind: "Execution",
+    nodeType: null,
+    value: "",
+    method: "GET",
+    url: "",
+    inputSample: '{\n  "key": "value"\n}',
+    outputSample: '{\n  "status": "ok"\n}',
+  });
+  const [leftPaneWidth, setLeftPaneWidth] = React.useState(0.3);
+  const [centerPaneWidth, setCenterPaneWidth] = React.useState(0.4);
+  const [isResizing, setIsResizing] = React.useState<"left" | "right" | null>(null);
   const nodeTypes = React.useMemo(
     () => ({
       initialPlus: InitialPlusNode,
@@ -1010,6 +1071,21 @@ export function WorkflowEditor({
           setSelectorMode(mode);
           setSelectorOpen(true);
         },
+        openNodeEditor: (nodeId: string, label: string, kind: "Trigger" | "Execution") => {
+          const node = nodes.find((item) => item.id === nodeId);
+          const data = (node?.data ?? {}) as WorkflowNodeData;
+          setNodeEditor({
+            isOpen: true,
+            nodeId,
+            kind,
+            value: label,
+            nodeType: node?.type ?? null,
+            method: data.method || "GET",
+            url: data.url || "",
+            inputSample: data.inputSample || '{\n  "key": "value"\n}',
+            outputSample: data.outputSample || '{\n  "status": "ok"\n}',
+          });
+        },
         connectingFromNodeId,
       }}
     >
@@ -1185,6 +1261,227 @@ export function WorkflowEditor({
             </div>
             </aside>
           </>
+        )}
+
+        {nodeEditor.isOpen && (
+          <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/60 p-2">
+            <div className="relative h-[95vh] w-[98vw] border border-border bg-background shadow-2xl">
+              <div className="flex items-center justify-between border-b border-border px-6 py-4">
+                <div className="flex items-center gap-3">
+                  <GlobeIcon className="h-4 w-4 text-foreground" />
+                  <div>
+                    <h3 className="text-lg font-semibold">HTTP Request</h3>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <span>Docs</span>
+                    <ExternalLinkIcon className="h-3.5 w-3.5" />
+                  </button>
+                  <Separator orientation="vertical" className="h-5" />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setNodeEditor((current) => ({ ...current, isOpen: false }))
+                    }
+                    className="inline-flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label="Close editor"
+                  >
+                    <XIcon className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+              {nodeEditor.nodeType === "httpRequest" ? (
+                <div
+                  className="relative h-[calc(100%-73px)] w-full"
+                  onMouseMove={(event) => {
+                    if (!isResizing) return;
+                    const container = event.currentTarget.getBoundingClientRect();
+                    const x = event.clientX - container.left;
+                    if (isResizing === "left") {
+                      const nextLeft = Math.min(Math.max(x / container.width, 0.2), 0.6);
+                      const rightWidth = 1 - leftPaneWidth - centerPaneWidth;
+                      const maxLeft = 0.8 - rightWidth;
+                      setLeftPaneWidth(Math.min(nextLeft, maxLeft));
+                      return;
+                    }
+                    const leftAndCenter = x / container.width;
+                    const nextCenter = leftAndCenter - leftPaneWidth;
+                    const clampedCenter = Math.min(Math.max(nextCenter, 0.2), 0.6);
+                    const maxCenter = 0.8 - leftPaneWidth;
+                    setCenterPaneWidth(Math.min(clampedCenter, maxCenter));
+                  }}
+                  onMouseUp={() => setIsResizing(null)}
+                  onMouseLeave={() => setIsResizing(null)}
+                >
+                  <div
+                    className="grid h-full"
+                    style={{
+                      gridTemplateColumns: `${leftPaneWidth * 100}% 8px ${centerPaneWidth * 100}% 8px auto`,
+                    }}
+                  >
+                    <div className="border-r border-border p-4">
+                      <p className="mb-3 text-xs font-semibold text-muted-foreground">Input</p>
+                      <textarea
+                        value={nodeEditor.inputSample}
+                        onChange={(event) => {
+                          const nextValue = event.target.value;
+                          setNodeEditor((current) => ({ ...current, inputSample: nextValue }));
+                          if (!nodeEditor.nodeId) return;
+                          setNodes((currentNodes) =>
+                            currentNodes.map((node) =>
+                              node.id === nodeEditor.nodeId
+                                ? {
+                                    ...node,
+                                    data: {
+                                      ...(node.data as WorkflowNodeData),
+                                      inputSample: nextValue,
+                                    },
+                                  }
+                                : node
+                            )
+                          );
+                        }}
+                        className="h-[calc(100%-22px)] w-full resize-none rounded-md border border-border bg-card p-3 font-mono text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+                      />
+                    </div>
+
+                    <div
+                      className="cursor-col-resize bg-border/60 hover:bg-primary/40 transition-colors"
+                      onMouseDown={() => setIsResizing("left")}
+                    />
+
+                    <div className="border-r border-border p-4">
+                      <p className="mb-3 text-xs font-semibold text-muted-foreground">Configuration</p>
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <label className="text-xs font-medium text-foreground">Method</label>
+                          <Select
+                            value={nodeEditor.method}
+                            onValueChange={(value) => {
+                              setNodeEditor((current) => ({ ...current, method: value }));
+                              if (!nodeEditor.nodeId) return;
+                              setNodes((currentNodes) =>
+                                currentNodes.map((node) =>
+                                  node.id === nodeEditor.nodeId
+                                    ? {
+                                        ...node,
+                                        data: {
+                                          ...(node.data as WorkflowNodeData),
+                                          method: value,
+                                        },
+                                      }
+                                    : node
+                                )
+                              );
+                            }}
+                          >
+                            <SelectTrigger className="h-10 w-full bg-card text-sm">
+                              <SelectValue placeholder="Method" />
+                            </SelectTrigger>
+                            <SelectContent className="z-[120]">
+                              <SelectItem value="GET">GET</SelectItem>
+                              <SelectItem value="POST">POST</SelectItem>
+                              <SelectItem value="PUT">PUT</SelectItem>
+                              <SelectItem value="PATCH">PATCH</SelectItem>
+                              <SelectItem value="DELETE">DELETE</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-xs font-medium text-foreground">URL</label>
+                          <Input
+                            value={nodeEditor.url}
+                            onChange={(event) => {
+                              const nextValue = event.target.value;
+                              setNodeEditor((current) => ({ ...current, url: nextValue }));
+                              if (!nodeEditor.nodeId) return;
+                              setNodes((currentNodes) =>
+                                currentNodes.map((node) =>
+                                  node.id === nodeEditor.nodeId
+                                    ? {
+                                        ...node,
+                                        data: {
+                                          ...(node.data as WorkflowNodeData),
+                                          url: nextValue,
+                                        },
+                                      }
+                                    : node
+                                )
+                              );
+                            }}
+                            placeholder="https://api.example.com/resource"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div
+                      className="cursor-col-resize bg-border/60 hover:bg-primary/40 transition-colors"
+                      onMouseDown={() => setIsResizing("right")}
+                    />
+
+                    <div className="p-4">
+                      <p className="mb-3 text-xs font-semibold text-muted-foreground">Output</p>
+                      <textarea
+                        value={nodeEditor.outputSample}
+                        onChange={(event) => {
+                          const nextValue = event.target.value;
+                          setNodeEditor((current) => ({ ...current, outputSample: nextValue }));
+                          if (!nodeEditor.nodeId) return;
+                          setNodes((currentNodes) =>
+                            currentNodes.map((node) =>
+                              node.id === nodeEditor.nodeId
+                                ? {
+                                    ...node,
+                                    data: {
+                                      ...(node.data as WorkflowNodeData),
+                                      outputSample: nextValue,
+                                    },
+                                  }
+                                : node
+                            )
+                          );
+                        }}
+                        className="h-[calc(100%-22px)] w-full resize-none rounded-md border border-border bg-card p-3 font-mono text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
+                      />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4 p-6">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-foreground">Node title</label>
+                    <Input
+                      value={nodeEditor.value}
+                      onChange={(event) => {
+                        const nextValue = event.target.value;
+                        setNodeEditor((current) => ({ ...current, value: nextValue }));
+                        if (!nodeEditor.nodeId) return;
+                        setNodes((currentNodes) =>
+                          currentNodes.map((node) =>
+                            node.id === nodeEditor.nodeId
+                              ? {
+                                  ...node,
+                                  data: {
+                                    ...(node.data as WorkflowNodeData),
+                                    label: nextValue.trim() || "Untitled Node",
+                                  },
+                                }
+                              : node
+                          )
+                        );
+                      }}
+                      placeholder="Enter node title..."
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
         )}
         </div>
       </EdgeActionsContext.Provider>
