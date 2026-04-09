@@ -250,10 +250,16 @@ function SchemaTreeNode({
   field,
   value,
   depth = 0,
+  path,
+  draggableFields = false,
+  onFieldDragStart,
 }: {
   field: string;
   value: unknown;
   depth?: number;
+  path?: string;
+  draggableFields?: boolean;
+  onFieldDragStart?: (path: string) => void;
 }) {
   const type = getJsonType(value);
   const isExpandable =
@@ -295,7 +301,17 @@ function SchemaTreeNode({
             <span className="inline-block h-4 w-4" />
           )}
           {schemaTypeBadge(value)}
-          <span className="text-sm font-medium text-foreground">{field}</span>
+          <span
+            className={`text-sm font-medium text-foreground ${draggableFields && path ? "cursor-grab active:cursor-grabbing" : ""}`}
+            draggable={Boolean(draggableFields && path)}
+            onDragStart={(event) => {
+              if (!draggableFields || !path || !onFieldDragStart) return;
+              event.dataTransfer.setData("text/plain", path);
+              onFieldDragStart(path);
+            }}
+          >
+            {field}
+          </span>
         </div>
         <span className="ml-4 max-w-[55%] truncate text-sm text-muted-foreground">{valueText}</span>
       </div>
@@ -308,6 +324,9 @@ function SchemaTreeNode({
               field={childField}
               value={childValue}
               depth={depth + 1}
+              path={path ? `${path}.${childField}` : childField}
+              draggableFields={draggableFields}
+              onFieldDragStart={onFieldDragStart}
             />
           ))}
         </div>
@@ -318,8 +337,12 @@ function SchemaTreeNode({
 
 function OutputSchemaTab({
   parsedOutput,
+  draggableFields = false,
+  onFieldDragStart,
 }: {
   parsedOutput: unknown | null;
+  draggableFields?: boolean;
+  onFieldDragStart?: (path: string) => void;
 }) {
   if (parsedOutput === null) {
     return (
@@ -334,12 +357,23 @@ function OutputSchemaTab({
       <SchemaTreeNode
         field={Array.isArray(parsedOutput) ? "[0]" : "root"}
         value={Array.isArray(parsedOutput) ? parsedOutput[0] ?? {} : parsedOutput}
+        path={Array.isArray(parsedOutput) ? "[0]" : "root"}
+        draggableFields={draggableFields}
+        onFieldDragStart={onFieldDragStart}
       />
     </div>
   );
 }
 
-function OutputTableTab({ parsedOutput }: { parsedOutput: unknown | null }) {
+function OutputTableTab({
+  parsedOutput,
+  draggableFields = false,
+  onFieldDragStart,
+}: {
+  parsedOutput: unknown | null;
+  draggableFields?: boolean;
+  onFieldDragStart?: (path: string) => void;
+}) {
   if (parsedOutput === null) {
     return (
       <div className="rounded-md border border-border bg-card p-3 text-xs text-muted-foreground">
@@ -371,7 +405,16 @@ function OutputTableTab({ parsedOutput }: { parsedOutput: unknown | null }) {
         <thead className="sticky top-0 bg-muted/30">
           <tr>
             {columns.map((column) => (
-              <th key={column} className="border-b border-r border-border px-3 py-2 text-left font-semibold text-foreground">
+              <th
+                key={column}
+                className={`border-b border-r border-border px-3 py-2 text-left font-semibold text-foreground ${draggableFields ? "cursor-grab active:cursor-grabbing" : ""}`}
+                draggable={draggableFields}
+                onDragStart={(event) => {
+                  if (!draggableFields || !onFieldDragStart) return;
+                  event.dataTransfer.setData("text/plain", column);
+                  onFieldDragStart(column);
+                }}
+              >
                 {column}
               </th>
             ))}
@@ -497,6 +540,7 @@ function InputTabsPanel({
   isExecuting,
   onExecutePreviousStep,
   previousNodeType,
+  expressionFieldPaths,
 }: {
   parsedInput: unknown | null;
   prettyJsonInput: string;
@@ -504,6 +548,7 @@ function InputTabsPanel({
   isExecuting: boolean;
   onExecutePreviousStep: () => void;
   previousNodeType?: string;
+  expressionFieldPaths: string[];
 }) {
   const [activeTab, setActiveTab] = React.useState("schema");
   const itemCount = getOutputItemCount(parsedInput);
@@ -570,13 +615,41 @@ function InputTabsPanel({
 
       <div className="h-[calc(100%-74px)] min-w-0 overflow-hidden p-2">
         <TabsContent value="schema" className="mt-0 h-full min-w-0 overflow-hidden">
-          <OutputSchemaTab parsedOutput={parsedInput} />
+          <OutputSchemaTab
+            parsedOutput={parsedInput}
+            draggableFields
+            onFieldDragStart={() => {
+              // No-op: drag data is set via dataTransfer.
+            }}
+          />
         </TabsContent>
         <TabsContent value="table" className="mt-0 h-full min-w-0 overflow-hidden">
-          <OutputTableTab parsedOutput={parsedInput} />
+          <OutputTableTab
+            parsedOutput={parsedInput}
+            draggableFields
+            onFieldDragStart={() => {
+              // No-op: drag data is set via dataTransfer.
+            }}
+          />
         </TabsContent>
         <TabsContent value="json" className="mt-0 h-full min-w-0 overflow-hidden">
           <div className="h-full overflow-auto rounded-md bg-background/40 p-3 font-mono text-xs text-foreground">
+            {expressionFieldPaths.length > 0 && (
+              <div className="mb-2 flex flex-wrap gap-1.5 border-b border-border pb-2">
+                {expressionFieldPaths.map((path) => (
+                  <span
+                    key={`json-drag-${path}`}
+                    draggable
+                    onDragStart={(event) => {
+                      event.dataTransfer.setData("text/plain", path);
+                    }}
+                    className="cursor-grab rounded border border-border bg-background px-2 py-0.5 text-[11px] text-muted-foreground active:cursor-grabbing"
+                  >
+                    {path}
+                  </span>
+                ))}
+              </div>
+            )}
             <pre className="max-w-full whitespace-pre-wrap break-words">{prettyJsonInput || "{}"}</pre>
           </div>
         </TabsContent>
@@ -2331,7 +2404,7 @@ export function WorkflowEditor({
                       gridTemplateColumns: `${leftPaneWidth * 100}% 8px ${centerPaneWidth * 100}% 8px auto`,
                     }}
                   >
-                    <div className="border-r border-border p-4">
+                    <div className="min-w-0 overflow-hidden border-r border-border p-4">
                       <p className="mb-3 text-xs font-semibold text-muted-foreground">Input</p>
                       {previousNode ? (
                         <div className="h-[calc(100%-22px)]">
@@ -2341,6 +2414,7 @@ export function WorkflowEditor({
                             hasInput={hasPreviousOutput}
                             isExecuting={isExecuting}
                             previousNodeType={previousNode.type}
+                            expressionFieldPaths={expressionFieldPaths}
                             onExecutePreviousStep={() => executeWorkflowNow(previousNode.id)}
                           />
                         </div>
@@ -2356,7 +2430,7 @@ export function WorkflowEditor({
                       onMouseDown={() => setIsResizing("left")}
                     />
 
-                    <div className="border-r border-border p-4">
+                    <div className="min-w-0 overflow-y-auto border-r border-border p-4">
                       <p className="mb-3 text-xs font-semibold text-muted-foreground">Configuration</p>
                       <div className="space-y-4">
                         <div className="space-y-2">
@@ -2417,31 +2491,6 @@ export function WorkflowEditor({
                             }}
                             placeholder="https://api.example.com/resource"
                           />
-                        </div>
-                        <div className="rounded-md border border-border bg-card p-3">
-                          <p className="mb-2 text-xs font-medium text-foreground">Input Fields (drag for expression)</p>
-                          {expressionFieldPaths.length > 0 ? (
-                            <div className="flex flex-wrap gap-1.5">
-                              {expressionFieldPaths.map((path) => (
-                                <button
-                                  key={path}
-                                  type="button"
-                                  draggable
-                                  onDragStart={(event) => {
-                                    event.dataTransfer.setData("text/plain", path);
-                                  }}
-                                  className="rounded border border-border bg-background px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground"
-                                  title={`{{ $json.${path} }}`}
-                                >
-                                  {path}
-                                </button>
-                              ))}
-                            </div>
-                          ) : (
-                            <p className="text-[11px] text-muted-foreground">
-                              No previous-node fields available yet. Run previous step first.
-                            </p>
-                          )}
                         </div>
                         <div className="rounded-md border border-border bg-card p-3">
                           <div className="mb-3 flex items-center justify-between">
