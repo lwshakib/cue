@@ -1,4 +1,7 @@
-# Axonix 🚀
+<p align="left">
+  <img src="apps/web/public/logo.svg" alt="Axonix Logo" width="40" height="40" style="margin-right: 12px; vertical-align: middle;">
+  <h1 style="display: inline-block; vertical-align: middle; margin: 0;">Axonix</h1>
+</p>
 
 Axonix is a high-performance, **Agentic Workflow Automation** platform designed to streamline complex business processes through a visual, node-based automation engine. Built on a modern Turborepo monorepo architecture, Axonix provides a seamless experience from design to execution.
 
