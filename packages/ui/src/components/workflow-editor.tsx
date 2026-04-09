@@ -3492,7 +3492,7 @@ export function WorkflowEditor({
                                     variant="outline"
                                     size="sm"
                                     onClick={() => {
-                                      const nextHeaders = [...nodeEditor.headers, { id: `hdr-${Date.now()}`, name: "", value: "", valueType: "fixed" }];
+                                      const nextHeaders = [...nodeEditor.headers, { id: `hdr-${Date.now()}`, name: "", value: "", valueType: "fixed" as const }];
                                       setNodeEditor((current) => ({ ...current, headers: nextHeaders }));
                                       if (!nodeEditor.nodeId) return;
                                       setNodes((currentNodes) =>
@@ -3751,7 +3751,7 @@ export function WorkflowEditor({
                                     variant="outline"
                                     size="sm"
                                     onClick={() => {
-                                      const nextFields = [...nodeEditor.bodyFields, { id: `body-${Date.now()}`, name: "", value: "", valueType: "fixed" }];
+                                      const nextFields = [...nodeEditor.bodyFields, { id: `body-${Date.now()}`, name: "", value: "", valueType: "fixed" as const }];
                                       setNodeEditor((current) => ({ ...current, bodyFields: nextFields }));
                                       if (!nodeEditor.nodeId) return;
                                       setNodes((currentNodes) =>

@@ -43,8 +43,9 @@ export default function PersonalSettingsPage() {
 
     setIsUploading(true)
     try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || ""
       // 1. Get Presigned URL
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/user/upload-url`, {
+      const response = await fetch(`${apiUrl}/v1/user/upload-url`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -67,14 +68,14 @@ export default function PersonalSettingsPage() {
       })
 
       // 3. Update Profile in DB
-      const patchResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/user/profile`, {
+      const patchResponse = await fetch(`${apiUrl}/v1/user/profile`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${session?.token || ""}`
         },
         body: JSON.stringify({
-          image: `${process.env.NEXT_PUBLIC_API_URL.replace("/api", "")}/${path}`, // This logic should match S3Service._getInternalUrl or just use the full S3 URL if available. 
+          image: `${apiUrl.replace("/api", "")}/${path}`, // This logic should match S3Service._getInternalUrl or just use the full S3 URL if available. 
           // For now, we'll let the user provide the path and we can construct it on the server if needed, 
           // but the current S3Service._getInternalUrl logic is more robust.
           // Better: The server should return the final URL in the upload-url response if possible, 
