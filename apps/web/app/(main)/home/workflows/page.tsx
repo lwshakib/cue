@@ -100,7 +100,7 @@ export default function WorkflowsPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground group-focus-within:text-foreground transition-colors" />
           <Input 
             placeholder="Search" 
-            className="pl-10 h-10 bg-muted/5 border-muted-foreground/10 focus-visible:ring-1 focus-visible:ring-red-600/50" 
+            className="pl-10 h-10 bg-muted/5 border-muted-foreground/10 focus-visible:ring-1 focus-visible:ring-primary/50" 
           />
         </div>
         <Select defaultValue="updated">
@@ -133,7 +133,7 @@ export default function WorkflowsPage() {
             onClick={() => router.push(`/workflow/${wf.id}`)}
           >
             <div className="space-y-1">
-              <h3 className="font-semibold text-[15px] group-hover:text-red-500 transition-colors">{wf.name}</h3>
+              <h3 className="font-semibold text-[15px] group-hover:text-primary transition-colors">{wf.name}</h3>
               <p className="text-xs text-muted-foreground flex items-center gap-2">
                 Last updated {formatDate(wf.updatedAt)} <span className="h-4 w-px bg-muted-foreground/30 mx-1" /> Created {formatDate(wf.createdAt)}
               </p>

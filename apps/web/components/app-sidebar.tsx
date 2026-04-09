@@ -10,6 +10,7 @@ import {
 
 import { NavMain } from "@/components/nav-main"
 import { NavSettings } from "@/components/nav-settings"
+import { Logo } from "@/components/Logo"
 import {
   Sidebar,
   SidebarContent,
@@ -51,7 +52,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <div className="flex h-12 items-center justify-between group-data-[collapsible=icon]:hidden w-full">
                 <div className="flex items-center gap-2">
                   <div className="flex aspect-square size-8 items-center justify-center rounded-lg">
-                    <img src="/colorful_logo.svg" alt="Axonix Logo" className="size-6" />
+                    <Logo className="size-6 text-sidebar-foreground" />
                   </div>
                   <span className="truncate font-semibold text-sidebar-foreground">Axonix</span>
                 </div>
