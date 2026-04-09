@@ -78,6 +78,17 @@ type WorkflowEditorProps = {
     message?: string;
     statusCode?: number;
     output?: string;
+    errorDetails?: {
+      source?: string;
+      code?: number;
+      fullMessage?: string;
+      request?: {
+        method?: string;
+        url?: string;
+        headers?: Record<string, string>;
+        body?: string | null;
+      };
+    };
   }) => void, options?: { targetNodeId?: string }) => Promise<{
     statuses: Array<{
       nodeId: string;
@@ -86,6 +97,17 @@ type WorkflowEditorProps = {
       message?: string;
       statusCode?: number;
       output?: string;
+      errorDetails?: {
+        source?: string;
+        code?: number;
+        fullMessage?: string;
+        request?: {
+          method?: string;
+          url?: string;
+          headers?: Record<string, string>;
+          body?: string | null;
+        };
+      };
     }>;
   } | null>;
 };
@@ -483,21 +505,99 @@ const getOutputItemCount = (parsedOutput: unknown | null): number => {
   return 1;
 };
 
+function OutputErrorDetails({
+  details,
+}: {
+  details: {
+    source?: string;
+    code?: number;
+    fullMessage?: string;
+    request?: {
+      method?: string;
+      url?: string;
+      headers?: Record<string, string>;
+      body?: string | null;
+    };
+  };
+}) {
+  return (
+    <div className="h-full overflow-auto rounded-md border border-border bg-card p-3">
+      <p className="mb-3 text-sm font-semibold text-foreground">Error details</p>
+      <Accordion type="multiple" defaultValue={["source", "request"]}>
+        <AccordionItem value="source" className="border-border">
+          <AccordionTrigger className="py-2 text-sm">
+            From {details.source || "HTTP Request"}
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="space-y-2 text-xs">
+              {typeof details.code === "number" && (
+                <div className="grid grid-cols-[120px_1fr] gap-2">
+                  <span className="text-muted-foreground">Error code</span>
+                  <span className="text-foreground">{details.code}</span>
+                </div>
+              )}
+              {details.fullMessage && (
+                <div className="grid grid-cols-[120px_1fr] gap-2">
+                  <span className="text-muted-foreground">Full message</span>
+                  <span className="break-words text-foreground">{details.fullMessage}</span>
+                </div>
+              )}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+        <AccordionItem value="request" className="border-border">
+          <AccordionTrigger className="py-2 text-sm">Request</AccordionTrigger>
+          <AccordionContent>
+            <pre className="max-w-full whitespace-pre-wrap break-words rounded-md bg-background/50 p-2 font-mono text-xs text-foreground">
+              {JSON.stringify(
+                {
+                  method: details.request?.method,
+                  url: details.request?.url,
+                  headers: details.request?.headers,
+                  body: details.request?.body,
+                },
+                null,
+                2
+              )}
+            </pre>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+    </div>
+  );
+}
+
 function OutputTabsPanel({
   parsedOutput,
   prettyJsonOutput,
   hasOutput,
   isExecuting,
   onExecuteStep,
+  errorDetails,
 }: {
   parsedOutput: unknown | null;
   prettyJsonOutput: string;
   hasOutput: boolean;
   isExecuting: boolean;
   onExecuteStep: (targetNodeId?: string) => void;
+  errorDetails?: {
+    source?: string;
+    code?: number;
+    fullMessage?: string;
+    request?: {
+      method?: string;
+      url?: string;
+      headers?: Record<string, string>;
+      body?: string | null;
+    };
+  };
 }) {
   const [activeTab, setActiveTab] = React.useState("schema");
   const itemCount = getOutputItemCount(parsedOutput);
+
+  if (errorDetails) {
+    return <OutputErrorDetails details={errorDetails} />;
+  }
 
   if (!hasOutput) {
     return (
@@ -1564,8 +1664,35 @@ export function WorkflowEditor({
       message?: string;
       statusCode?: number;
       output?: string;
+      errorDetails?: {
+        source?: string;
+        code?: number;
+        fullMessage?: string;
+        request?: {
+          method?: string;
+          url?: string;
+          headers?: Record<string, string>;
+          body?: string | null;
+        };
+      };
     }>
   >([]);
+  const [nodeErrorDetails, setNodeErrorDetails] = React.useState<
+    Record<
+      string,
+      {
+        source?: string;
+        code?: number;
+        fullMessage?: string;
+        request?: {
+          method?: string;
+          url?: string;
+          headers?: Record<string, string>;
+          body?: string | null;
+        };
+      }
+    >
+  >({});
   const [connectingFromNodeId, setConnectingFromNodeId] = React.useState<string | null>(null);
   const [nodeEditor, setNodeEditor] = React.useState<{
     isOpen: boolean;
@@ -1949,6 +2076,10 @@ export function WorkflowEditor({
     () => getExpressionPaths(parsedPreviousOutput),
     [parsedPreviousOutput]
   );
+  const selectedNodeErrorDetails = React.useMemo(
+    () => (nodeEditor.nodeId ? nodeErrorDetails[nodeEditor.nodeId] : undefined),
+    [nodeEditor.nodeId, nodeErrorDetails]
+  );
 
   const executeWorkflowNow = async (targetNodeId?: string) => {
     const unconfiguredNodes = getUnconfiguredNodes(nodes);
@@ -1969,6 +2100,7 @@ export function WorkflowEditor({
     const now = new Date().toLocaleTimeString();
     setLastExecutedAt(now);
     setExecutionStatuses([]);
+    setNodeErrorDetails({});
     const initialStatuses: Record<string, NodeRunStatus> = {};
     for (const node of nodes) {
       initialStatuses[node.id] = "initial";
@@ -1997,8 +2129,25 @@ export function WorkflowEditor({
           message?: string;
           statusCode?: number;
           output?: string;
+          errorDetails?: {
+            source?: string;
+            code?: number;
+            fullMessage?: string;
+            request?: {
+              method?: string;
+              url?: string;
+              headers?: Record<string, string>;
+              body?: string | null;
+            };
+          };
         }> = [];
         const result = await onExecuteWorkflow((status) => {
+          if (status.errorDetails && status.status === "error") {
+            setNodeErrorDetails((current) => ({
+              ...current,
+              [status.nodeId]: status.errorDetails!,
+            }));
+          }
           streamedStatuses.push(status);
           setExecutionStatuses([...streamedStatuses]);
 
@@ -2070,6 +2219,12 @@ export function WorkflowEditor({
                     }
                   : currentEditor
               );
+            }
+            if (item.errorDetails && item.status === "error") {
+              setNodeErrorDetails((current) => ({
+                ...current,
+                [item.nodeId]: item.errorDetails!,
+              }));
             }
           }
           setNodeStatuses(mapped);
@@ -3630,6 +3785,7 @@ export function WorkflowEditor({
                           prettyJsonOutput={prettyJsonOutput}
                           hasOutput={hasAnyOutput}
                           isExecuting={isExecuting}
+                          errorDetails={selectedNodeErrorDetails}
                           onExecuteStep={() => executeWorkflowNow(nodeEditor.nodeId ?? undefined)}
                         />
                       </div>

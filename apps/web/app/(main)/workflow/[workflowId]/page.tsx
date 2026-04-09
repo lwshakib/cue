@@ -142,6 +142,17 @@ export default function WorkflowByIdPage({ params }: WorkflowPageProps) {
     message?: string
     statusCode?: number
     output?: string
+    errorDetails?: {
+      source?: string
+      code?: number
+      fullMessage?: string
+      request?: {
+        method?: string
+        url?: string
+        headers?: Record<string, string>
+        body?: string | null
+      }
+    }
   }) => void, options?: { targetNodeId?: string }) => {
     const token = getSessionToken()
     if (!token) return null
@@ -194,6 +205,17 @@ export default function WorkflowByIdPage({ params }: WorkflowPageProps) {
           message?: string
           statusCode?: number
           output?: string
+          errorDetails?: {
+            source?: string
+            code?: number
+            fullMessage?: string
+            request?: {
+              method?: string
+              url?: string
+              headers?: Record<string, string>
+              body?: string | null
+            }
+          }
         }>
       } | null>((resolve) => {
         const eventSource = new EventSource(streamUrl.toString())

@@ -25,6 +25,17 @@ type WorkflowRunStatus = {
   message?: string;
   statusCode?: number;
   output?: string;
+  errorDetails?: {
+    source?: string;
+    code?: number;
+    fullMessage?: string;
+    request?: {
+      method?: string;
+      url?: string;
+      headers?: Record<string, string>;
+      body?: string | null;
+    };
+  };
 };
 
 const runWorkflowSequence = async (
@@ -198,6 +209,21 @@ const runWorkflowSequence = async (
             message: response.ok ? "Request succeeded" : "Request failed",
             statusCode: response.status,
             output,
+          errorDetails: response.ok
+            ? undefined
+            : {
+                source: "HTTP Request",
+                code: response.status,
+                fullMessage: `${response.status} - ${output || "Request failed"}`,
+                request: {
+                  method,
+                  url,
+                  headers: {
+                    "content-type": "application/json",
+                  },
+                  body: requestInit.body ? String(requestInit.body) : null,
+                },
+              },
           });
 
           if (!response.ok) {
@@ -209,6 +235,18 @@ const runWorkflowSequence = async (
             label: node.data?.label || "HTTP Request",
             status: "error",
             message: error?.message || "Request failed",
+          errorDetails: {
+            source: "HTTP Request",
+            fullMessage: error?.message || "Request failed",
+            request: {
+              method,
+              url,
+              headers: {
+                "content-type": "application/json",
+              },
+              body: payload ?? null,
+            },
+          },
           });
           canContinueBranch = false;
         }
