@@ -142,7 +142,7 @@ export default function WorkflowByIdPage({ params }: WorkflowPageProps) {
     message?: string
     statusCode?: number
     output?: string
-  }) => void) => {
+  }) => void, options?: { targetNodeId?: string }) => {
     const token = getSessionToken()
     if (!token) return null
 
@@ -153,6 +153,9 @@ export default function WorkflowByIdPage({ params }: WorkflowPageProps) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
+        body: JSON.stringify({
+          targetNodeId: options?.targetNodeId,
+        }),
       })
       if (!response.ok) {
         throw new Error(`Execute API failed with status ${response.status}`)
@@ -177,6 +180,9 @@ export default function WorkflowByIdPage({ params }: WorkflowPageProps) {
     try {
       const streamUrl = new URL(`/api/workflow/${workflowId}/execute/stream`, window.location.origin)
       streamUrl.searchParams.set("token", token)
+      if (options?.targetNodeId) {
+        streamUrl.searchParams.set("targetNodeId", options.targetNodeId)
+      }
 
       return await new Promise<{
         workflowId: string

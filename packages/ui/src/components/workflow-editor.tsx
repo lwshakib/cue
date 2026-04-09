@@ -61,6 +61,7 @@ import {
   SelectValue,
 } from "./ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { toast } from "sonner";
 
 type WorkflowEditorProps = {
   initialNodes?: Node[];
@@ -74,7 +75,7 @@ type WorkflowEditorProps = {
     message?: string;
     statusCode?: number;
     output?: string;
-  }) => void) => Promise<{
+  }) => void, options?: { targetNodeId?: string }) => Promise<{
     statuses: Array<{
       nodeId: string;
       label: string;
@@ -105,6 +106,12 @@ const isNodeConfigured = (nodeType: string, data: WorkflowNodeData): boolean => 
   }
   return true;
 };
+
+const getUnconfiguredNodes = (workflowNodes: Node[]): Node[] =>
+  workflowNodes.filter((node) => {
+    if (!node.type || node.type === "initialPlus") return false;
+    return !isNodeConfigured(node.type, (node.data ?? {}) as WorkflowNodeData);
+  });
 
 function NodeConfigIndicator({
   configured,
@@ -342,7 +349,7 @@ function OutputTabsPanel({
   prettyJsonOutput: string;
   hasOutput: boolean;
   isExecuting: boolean;
-  onExecuteStep: () => void;
+  onExecuteStep: (targetNodeId?: string) => void;
 }) {
   const [activeTab, setActiveTab] = React.useState("schema");
   const itemCount = getOutputItemCount(parsedOutput);
@@ -350,7 +357,7 @@ function OutputTabsPanel({
   if (!hasOutput) {
     return (
       <div className="flex h-full min-w-0 items-center justify-center overflow-hidden rounded-md border border-border bg-card p-4">
-        <Button onClick={onExecuteStep} disabled={isExecuting}>
+        <Button onClick={() => onExecuteStep()} disabled={isExecuting}>
           {isExecuting ? "Running..." : "Execute step"}
         </Button>
       </div>
@@ -1545,7 +1552,21 @@ export function WorkflowEditor({
     [nodeEditor.outputSample]
   );
 
-  const executeWorkflowNow = async () => {
+  const executeWorkflowNow = async (targetNodeId?: string) => {
+    const unconfiguredNodes = getUnconfiguredNodes(nodes);
+    if (unconfiguredNodes.length > 0) {
+      const count = unconfiguredNodes.length;
+      toast.error(
+        count === 1
+          ? "1 node is not configured properly."
+          : `${count} nodes are not configured properly.`,
+        {
+          description: "Please configure required fields before executing the workflow.",
+        }
+      );
+      return;
+    }
+
     setIsExecuting(true);
     const now = new Date().toLocaleTimeString();
     setLastExecutedAt(now);
@@ -1619,7 +1640,7 @@ export function WorkflowEditor({
                 : currentEditor
             );
           }
-        });
+        }, targetNodeId ? { targetNodeId } : undefined);
         const finalStatuses = result?.statuses?.length
           ? result.statuses
           : streamedStatuses;
@@ -1794,7 +1815,7 @@ export function WorkflowEditor({
               <div className="flex flex-col items-center gap-2">
                 <Button
                   disabled={isExecuting}
-                  onClick={executeWorkflowNow}
+                  onClick={() => executeWorkflowNow()}
                 >
                   {isExecuting ? "Running..." : "Execute workflow"}
                 </Button>
@@ -2067,7 +2088,7 @@ export function WorkflowEditor({
                           prettyJsonOutput={prettyJsonOutput}
                           hasOutput={hasAnyOutput}
                           isExecuting={isExecuting}
-                          onExecuteStep={executeWorkflowNow}
+                          onExecuteStep={() => executeWorkflowNow(nodeEditor.nodeId ?? undefined)}
                         />
                       </div>
                     </div>

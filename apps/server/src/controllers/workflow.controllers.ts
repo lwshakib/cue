@@ -29,7 +29,10 @@ type WorkflowRunStatus = {
 
 const runWorkflowSequence = async (
   workflow: any,
-  onStatus?: (status: WorkflowRunStatus) => void
+  onStatus?: (status: WorkflowRunStatus) => void,
+  options?: {
+    stopAtNodeId?: string;
+  }
 ) => {
   const data = (workflow.data || {}) as { nodes?: WorkflowNode[]; edges?: WorkflowEdge[] };
   const nodes = data.nodes || [];
@@ -51,10 +54,67 @@ const runWorkflowSequence = async (
 
   const nodeById = new Map(nodes.map((node) => [node.id, node]));
   const outgoing = new Map<string, WorkflowEdge[]>();
+  const incoming = new Map<string, WorkflowEdge[]>();
   for (const edge of edges) {
-    const list = outgoing.get(edge.source) ?? [];
-    list.push(edge);
-    outgoing.set(edge.source, list);
+    const outgoingList = outgoing.get(edge.source) ?? [];
+    outgoingList.push(edge);
+    outgoing.set(edge.source, outgoingList);
+
+    const incomingList = incoming.get(edge.target) ?? [];
+    incomingList.push(edge);
+    incoming.set(edge.target, incomingList);
+  }
+
+  const stopAtNodeId = options?.stopAtNodeId;
+  let allowedNodeIds: Set<string> | null = null;
+  if (stopAtNodeId) {
+    if (!nodeById.has(stopAtNodeId)) {
+      const missingTargetStatus: WorkflowRunStatus = {
+        nodeId: stopAtNodeId,
+        label: "Selected Node",
+        status: "error",
+        message: "Selected step was not found in workflow",
+      };
+      onStatus?.(missingTargetStatus);
+      return [missingTargetStatus];
+    }
+
+    // Only execute nodes that are on a path that can reach the selected node.
+    allowedNodeIds = new Set<string>();
+    const stack = [stopAtNodeId];
+    while (stack.length > 0) {
+      const nodeId = stack.pop();
+      if (!nodeId || allowedNodeIds.has(nodeId)) continue;
+      allowedNodeIds.add(nodeId);
+
+      const previousEdges = incoming.get(nodeId) ?? [];
+      for (const edge of previousEdges) {
+        if (edge.source && !allowedNodeIds.has(edge.source)) {
+          stack.push(edge.source);
+        }
+      }
+    }
+
+    if (!allowedNodeIds.has(manualTrigger.id)) {
+      const unreachableTargetStatus: WorkflowRunStatus = {
+        nodeId: stopAtNodeId,
+        label: nodeById.get(stopAtNodeId)?.data?.label || "Selected Node",
+        status: "error",
+        message: "Selected step is not reachable from manual trigger",
+      };
+      onStatus?.(unreachableTargetStatus);
+      return [unreachableTargetStatus];
+    }
+  }
+
+  const shouldExecuteNode = (nodeId: string) => (allowedNodeIds ? allowedNodeIds.has(nodeId) : true);
+
+  for (const [sourceId, sourceEdges] of outgoing.entries()) {
+    if (!shouldExecuteNode(sourceId)) continue;
+    outgoing.set(
+      sourceId,
+      sourceEdges.filter((edge) => shouldExecuteNode(edge.target))
+    );
   }
 
   const statuses: WorkflowRunStatus[] = [];
@@ -163,6 +223,7 @@ const runWorkflowSequence = async (
     }
 
     if (!canContinueBranch) continue;
+    if (stopAtNodeId && currentNodeId === stopAtNodeId) continue;
 
     const nextEdges = outgoing.get(currentNodeId) ?? [];
     for (const edge of nextEdges) {
@@ -276,6 +337,7 @@ export const updateWorkflow = async (req: any, res: Response) => {
 export const executeWorkflow = async (req: any, res: Response) => {
   const userId = req.user.id;
   const workflowId = req.params.id;
+  const stopAtNodeId = typeof req.body?.targetNodeId === "string" ? req.body.targetNodeId : undefined;
 
   try {
     const workflow = await postgresService.findWorkflowByIdForUser(workflowId, userId);
@@ -283,7 +345,11 @@ export const executeWorkflow = async (req: any, res: Response) => {
       return res.status(404).json({ success: false, message: "Workflow not found." });
     }
 
-    const statuses = await runWorkflowSequence(workflow);
+    const statuses = await runWorkflowSequence(
+      workflow,
+      undefined,
+      stopAtNodeId ? { stopAtNodeId } : undefined
+    );
 
     res.json({
       success: true,
@@ -304,6 +370,10 @@ export const executeWorkflowStream = async (req: Request, res: Response) => {
   const workflowId = Array.isArray(workflowIdRaw) ? workflowIdRaw[0] : workflowIdRaw;
   const tokenRaw = req.query.token;
   const token = Array.isArray(tokenRaw) ? tokenRaw[0] : tokenRaw || "";
+  const targetNodeIdRaw = req.query.targetNodeId;
+  const stopAtNodeId = Array.isArray(targetNodeIdRaw)
+    ? (typeof targetNodeIdRaw[0] === "string" ? targetNodeIdRaw[0] : undefined)
+    : (typeof targetNodeIdRaw === "string" ? targetNodeIdRaw : undefined);
 
   if (!workflowId) {
     return res.status(400).json({ success: false, message: "Missing workflow id." });
@@ -344,9 +414,13 @@ export const executeWorkflowStream = async (req: Request, res: Response) => {
       startedAt: new Date().toISOString(),
     });
 
-    const statuses = await runWorkflowSequence(workflow, (status) => {
-      send("node-status", status);
-    });
+    const statuses = await runWorkflowSequence(
+      workflow,
+      (status) => {
+        send("node-status", status);
+      },
+      stopAtNodeId ? { stopAtNodeId } : undefined
+    );
 
     send("completed", {
       workflowId,

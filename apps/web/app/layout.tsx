@@ -32,7 +32,7 @@ export default function RootLayout({
         >
           <AuthHandler />
           {children}
-          <Toaster position="top-right" closeButton richColors theme="dark" />
+          <Toaster position="bottom-right" closeButton richColors theme="dark" />
         </ThemeProvider>
       </body>
     </html>

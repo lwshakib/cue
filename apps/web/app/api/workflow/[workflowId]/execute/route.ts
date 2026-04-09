@@ -15,6 +15,9 @@ export async function POST(
   try {
     const { workflowId } = await params;
     const authorization = request.headers.get("authorization");
+    const requestBody = await request.json().catch(() => ({}));
+    const targetNodeId =
+      typeof requestBody?.targetNodeId === "string" ? requestBody.targetNodeId : undefined;
     if (!authorization) {
       return NextResponse.json(
         { success: false, message: "Missing authorization header." },
@@ -28,7 +31,11 @@ export async function POST(
       headers: {
         Accept: "application/json",
         Authorization: authorization,
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify({
+        targetNodeId,
+      }),
       cache: "no-store",
     });
 

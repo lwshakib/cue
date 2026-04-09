@@ -15,6 +15,7 @@ export async function GET(
   try {
     const { workflowId } = await params;
     const token = request.nextUrl.searchParams.get("token");
+    const targetNodeId = request.nextUrl.searchParams.get("targetNodeId");
     if (!token) {
       return NextResponse.json(
         { success: false, message: "Missing token." },
@@ -22,7 +23,12 @@ export async function GET(
       );
     }
 
-    const backendUrl = `${getBackendBaseUrl()}/workflow/${workflowId}/execute/stream?token=${encodeURIComponent(token)}`;
+    const backendStreamUrl = new URL(`${getBackendBaseUrl()}/workflow/${workflowId}/execute/stream`);
+    backendStreamUrl.searchParams.set("token", token);
+    if (targetNodeId) {
+      backendStreamUrl.searchParams.set("targetNodeId", targetNodeId);
+    }
+    const backendUrl = backendStreamUrl.toString();
 
     const response = await fetch(backendUrl, {
       method: "GET",
