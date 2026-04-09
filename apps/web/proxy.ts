@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { auth } from '@/lib/auth';
-import { headers } from 'next/headers';
 
 /**
  * An array of routes that are accessible to the public
@@ -40,10 +39,28 @@ export const DEFAULT_LOGIN_REDIRECT = '/home/workflows';
  */
 export default async function proxy(request: NextRequest) {
   const { nextUrl } = request;
+  const tokenFromQuery = nextUrl.searchParams.get("token");
+
+  // Allow OAuth callback token bootstrap before private-route guard kicks in.
+  if (tokenFromQuery) {
+    const cleanUrl = nextUrl.clone();
+    cleanUrl.searchParams.delete("token");
+
+    const response = NextResponse.redirect(cleanUrl);
+    response.cookies.set("axonix_session_token", tokenFromQuery, {
+      path: "/",
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 60 * 60 * 24 * 30,
+      httpOnly: false,
+    });
+
+    return response;
+  }
 
   // Get session using custom server auth utility (which matches the better-auth API shape)
   const session = await auth.api.getSession({
-    headers: await headers(),
+    headers: request.headers,
   });
 
   const isLoggedIn = !!session;

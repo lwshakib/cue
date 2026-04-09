@@ -48,6 +48,7 @@ import { Input } from "./ui/input";
 type WorkflowEditorProps = {
   initialNodes?: Node[];
   initialEdges?: Edge[];
+  showChrome?: boolean;
 };
 
 type WorkflowNodeData = {
@@ -731,6 +732,7 @@ const executionNodeOptions = nodeOptions.filter(
 export function WorkflowEditor({
   initialNodes = defaultInitialNodes,
   initialEdges = defaultInitialEdges,
+  showChrome = true,
 }: WorkflowEditorProps) {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
@@ -1011,10 +1013,10 @@ export function WorkflowEditor({
         fitViewOptions={{ maxZoom: 0.75 }}
           fitView
         >
-          <MiniMap />
+          {showChrome && <MiniMap />}
           <Background />
-          <Controls />
-          {!nodes.some((n) => n.type === "initialPlus") && (
+          {showChrome && <Controls />}
+          {showChrome && !nodes.some((n) => n.type === "initialPlus") && (
             <Panel position="top-right">
               <Button
                 size="icon"
@@ -1036,7 +1038,7 @@ export function WorkflowEditor({
               </Button>
             </Panel>
           )}
-          {hasManualTrigger && (
+          {showChrome && hasManualTrigger && (
             <Panel position="bottom-center">
               <div className="flex flex-col items-center gap-2">
                 <Button
