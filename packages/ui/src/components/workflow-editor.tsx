@@ -353,37 +353,21 @@ function OutputSchemaTab({
   }
 
   const isArrayOutput = Array.isArray(parsedOutput);
-  const arrayFirstItem = isArrayOutput ? parsedOutput[0] : null;
   const isObjectOutput = !isArrayOutput && getJsonType(parsedOutput) === "object";
 
   if (isArrayOutput) {
-    if (arrayFirstItem && getJsonType(arrayFirstItem) === "object") {
-      return (
-        <div className="h-full overflow-auto rounded-md bg-background/40 py-1">
-          {Object.entries(arrayFirstItem as Record<string, unknown>).map(([field, value]) => (
-            <SchemaTreeNode
-              key={`schema-array-field-${field}`}
-              field={field}
-              value={value}
-              depth={0}
-              path={field}
-              draggableFields={draggableFields}
-              onFieldDragStart={onFieldDragStart}
-            />
-          ))}
-        </div>
-      );
-    }
-
     return (
       <div className="h-full overflow-auto rounded-md bg-background/40 py-1">
-        <SchemaTreeNode
-          field="value"
-          value={arrayFirstItem ?? ""}
-          path="value"
-          draggableFields={draggableFields}
-          onFieldDragStart={onFieldDragStart}
-        />
+        {(parsedOutput as unknown[]).map((item, index) => (
+          <SchemaTreeNode
+            key={`schema-array-item-${index}`}
+            field={`[${index}]`}
+            value={item}
+            path={`[${index}]`}
+            draggableFields={draggableFields}
+            onFieldDragStart={onFieldDragStart}
+          />
+        ))}
       </div>
     );
   }
