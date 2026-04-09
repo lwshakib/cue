@@ -2528,10 +2528,70 @@ export function WorkflowEditor({
 
                                   <div className="space-y-2">
                                     {nodeEditor.queryParams.map((param, index) => (
-                                      <Accordion key={param.id} type="single" collapsible defaultValue={param.id} className="rounded-md border border-border px-3">
+                                      <Accordion
+                                        key={param.id}
+                                        type="single"
+                                        collapsible
+                                        defaultValue={param.id}
+                                        className="group/param rounded-md border border-border px-3"
+                                      >
                                         <AccordionItem value={param.id} className="border-none">
-                                          <AccordionTrigger className="py-2 text-sm">
-                                            {param.name?.trim() ? param.name : `Query Parameter ${index + 1}`}
+                                          <AccordionTrigger className="py-2 text-sm no-underline hover:no-underline [&>svg]:hidden">
+                                            <div className="flex w-full items-center justify-between gap-2 pr-1">
+                                              <div className="flex min-w-0 items-center gap-2">
+                                                <ChevronRightIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                                                <span className="truncate">
+                                                  {param.name?.trim() ? param.name : `Query Parameter ${index + 1}`}
+                                                </span>
+                                              </div>
+                                              <button
+                                                type="button"
+                                                aria-label="Delete query parameter"
+                                                className="inline-flex h-6 w-6 items-center justify-center rounded border border-border text-muted-foreground opacity-0 transition-opacity hover:text-red-500 group-hover/param:opacity-100"
+                                                onMouseDown={(event) => {
+                                                  event.preventDefault();
+                                                  event.stopPropagation();
+                                                }}
+                                                onClick={(event) => {
+                                                  event.preventDefault();
+                                                  event.stopPropagation();
+                                                  const nextParams = nodeEditor.queryParams.filter(
+                                                    (item) => item.id !== param.id
+                                                  );
+                                                  const normalizedParams =
+                                                    nextParams.length > 0
+                                                      ? nextParams
+                                                      : [
+                                                          {
+                                                            id: `qp-${Date.now()}`,
+                                                            name: "",
+                                                            value: "",
+                                                            valueType: "fixed" as const,
+                                                          },
+                                                        ];
+                                                  setNodeEditor((current) => ({
+                                                    ...current,
+                                                    queryParams: normalizedParams,
+                                                  }));
+                                                  if (!nodeEditor.nodeId) return;
+                                                  setNodes((currentNodes) =>
+                                                    currentNodes.map((node) =>
+                                                      node.id === nodeEditor.nodeId
+                                                        ? {
+                                                            ...node,
+                                                            data: {
+                                                              ...(node.data as WorkflowNodeData),
+                                                              queryParams: normalizedParams,
+                                                            },
+                                                          }
+                                                        : node
+                                                    )
+                                                  );
+                                                }}
+                                              >
+                                                <Trash2Icon className="h-3.5 w-3.5" />
+                                              </button>
+                                            </div>
                                           </AccordionTrigger>
                                           <AccordionContent>
                                             <div className="space-y-3">
