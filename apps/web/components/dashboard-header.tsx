@@ -74,10 +74,10 @@ export function DashboardHeader() {
         </p>
       </div>
       
-      <div className="flex items-center gap-px rounded-md bg-primary shadow-sm hover:bg-primary/90 transition-colors overflow-hidden">
+      <div className="group flex items-center rounded-md bg-primary text-primary-foreground shadow-sm hover:shadow-md transition-all overflow-hidden">
         <Button 
           variant="ghost"
-          className="rounded-none h-10 px-4 border-r border-primary-foreground/10 text-sm font-semibold text-primary-foreground hover:bg-white/10 active:bg-white/20 whitespace-nowrap"
+          className="rounded-none h-10 px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/85 hover:text-primary-foreground active:bg-primary/75 active:text-primary-foreground whitespace-nowrap transition-colors"
           onClick={() => {
             if (currentAction.href === "/home/workflows") {
               void createWorkflow()
@@ -89,7 +89,11 @@ export function DashboardHeader() {
         </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="rounded-none h-10 w-10 px-0 text-primary-foreground hover:bg-white/10 active:bg-white/20">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-none h-10 w-10 px-0 border-l border-primary-foreground/15 text-primary-foreground hover:bg-primary/85 hover:text-primary-foreground active:bg-primary/75 active:text-primary-foreground data-[state=open]:bg-primary/85 data-[state=open]:text-primary-foreground transition-colors"
+            >
               <ChevronDown className="size-4" />
             </Button>
           </DropdownMenuTrigger>
