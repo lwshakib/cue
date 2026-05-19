@@ -1,40 +1,30 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
+import { Geist, Geist_Mono } from "next/font/google"
 
-import { ThemeProvider } from "@repo/ui/theme-provider";
-import { Toaster } from "@repo/ui/components/ui/sonner";
-import { AuthHandler } from "@/components/AuthHandler";
+import "@workspace/ui/globals.css"
+import { ThemeProvider } from "@/components/theme-provider"
+import { cn } from "@workspace/ui/lib/utils";
 
-const inter = Inter({
+const geist = Geist({subsets:['latin'],variable:'--font-sans'})
+
+const fontMono = Geist_Mono({
   subsets: ["latin"],
-  variable: "--font-inter",
-});
-
-export const metadata: Metadata = {
-  title: "Axonix - Modern Monorepo Stack",
-  description: "The ultimate turborepo template with Next.js, Shadcn, and Express.",
-};
+  variable: "--font-mono",
+})
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <AuthHandler />
-          {children}
-          <Toaster position="bottom-right" closeButton richColors theme="dark" />
-        </ThemeProvider>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={cn("antialiased", fontMono.variable, "font-sans", geist.variable)}
+    >
+      <body>
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
-  );
+  )
 }
