@@ -851,19 +851,19 @@ function NodeStatusBorder({
 const EDGE_TYPE = "buttonEdge";
 
 function GeminiLogoIcon({ className }: { className?: string }) {
-  return <img src="/logos/gemini.svg" alt="Gemini" className={className} />;
+  return <img src="/node-logos/gemini.svg" alt="Gemini" className={className} />;
 }
 
 function OpenAiLogoIcon({ className }: { className?: string }) {
-  return <img src="/logos/openai.svg" alt="OpenAI" className={className} />;
+  return <img src="/node-logos/openai.svg" alt="OpenAI" className={className} />;
 }
 
 function AnthropicLogoIcon({ className }: { className?: string }) {
-  return <img src="/logos/anthropic.svg" alt="Anthropic" className={className} />;
+  return <img src="/node-logos/anthropic.svg" alt="Anthropic" className={className} />;
 }
 
 function TavilyLogoIcon({ className }: { className?: string }) {
-  return <img src="/logos/tavily.svg" alt="Tavily" className={className} />;
+  return <img src="/node-logos/tavily.svg" alt="Tavily" className={className} />;
 }
 
 function deleteNodeAndConnections(
